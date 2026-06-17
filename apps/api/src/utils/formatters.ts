@@ -11,14 +11,14 @@
  * formatWeight(4000) // "4,000 kg"
  * formatWeight(500) // "500 kg"
  */
-export const formatWeight = (kg: number): string => {
+export function formatWeight(kg: number): string {
   const formatted = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(kg);
 
   return `${formatted} kg`;
-};
+}
 
 /**
  * Format bag count and weight per bag
@@ -29,10 +29,10 @@ export const formatWeight = (kg: number): string => {
  * formatBags(40, 100) // "40 x 100kg bags"
  * formatBags(1, 50) // "1 x 50kg bag"
  */
-export const formatBags = (bagCount: number, weightPerBagKg: number): string => {
+export function formatBags(bagCount: number, weightPerBagKg: number): string {
   const bagLabel = bagCount === 1 ? 'bag' : 'bags';
   return `${bagCount} x ${weightPerBagKg}kg ${bagLabel}`;
-};
+}
 
 /**
  * Format commodity string for display
@@ -43,7 +43,7 @@ export const formatBags = (bagCount: number, weightPerBagKg: number): string => 
  * formatCommodity("maize") // "Maize"
  * formatCommodity("MAIZE_WHITE") // "White Maize"
  */
-export const formatCommodity = (commodity: string): string => {
+export function formatCommodity(commodity: string): string {
   // Split by underscore to handle variants like "MAIZE_WHITE"
   const parts = commodity.toUpperCase().split('_');
 
@@ -58,8 +58,8 @@ export const formatCommodity = (commodity: string): string => {
   }
 
   return capitalizedParts.join(' ');
-};
-
+}
+ 
 /**
  * Convert a token ID to uppercase
  * @param tokenId - The token ID string (e.g., "kn-2026-000042")
@@ -67,7 +67,7 @@ export const formatCommodity = (commodity: string): string => {
  */
 export const formatTokenId = (tokenId: string): string => {
   return tokenId.toUpperCase();
-};
+}
 
 /**
  * Format an ISO 8601 date string to "DD Mon YYYY"
@@ -87,4 +87,4 @@ export const formatDate = (isoDate: string): string => {
     month: 'short',
     year: 'numeric',
   }).format(date);
-};
+}
