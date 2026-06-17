@@ -4,6 +4,8 @@ import {
   formatWeight,
   formatBags,
   formatCommodity,
+  formatTokenId,
+  formatDate,
 } from '../../src/utils/formatters.js'
 
 // ============================================================================
@@ -46,4 +48,28 @@ test('formatCommodity: capitalizes simple commodity names', () => {
 test('formatCommodity: handles underscore-separated variants with reversal', () => {
   const result = formatCommodity('MAIZE_WHITE')
   assert.equal(result, 'White Maize')
+})
+
+// ============================================================================
+// formatTokenId Tests
+// ============================================================================
+
+test('formatTokenId: converts lowercase token ID to uppercase', () => {
+  assert.equal(formatTokenId('kn-2026-000042'), 'KN-2026-000042')
+})
+
+test('formatTokenId: handles already uppercase or mixed case', () => {
+  assert.equal(formatTokenId('KN-2026-mixed-01'), 'KN-2026-MIXED-01')
+})
+
+// ============================================================================
+// formatDate Tests
+// ============================================================================
+
+test('formatDate: formats ISO date to human-readable format', () => {
+  assert.equal(formatDate('2026-03-14T00:00:00Z'), '14 Mar 2026')
+})
+
+test('formatDate: handles single-digit day and different months', () => {
+  assert.equal(formatDate('2026-01-05T00:00:00Z'), '05 Jan 2026')
 })

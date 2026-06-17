@@ -59,3 +59,32 @@ export const formatCommodity = (commodity: string): string => {
 
   return capitalizedParts.join(' ')
 }
+
+/**
+ * Convert a token ID to uppercase
+ * @param tokenId - The token ID string (e.g., "kn-2026-000042")
+ * @returns Uppercase token ID
+ */
+export const formatTokenId = (tokenId: string): string => {
+  return tokenId.toUpperCase()
+}
+
+/**
+ * Format an ISO 8601 date string to "DD Mon YYYY"
+ * @param isoDate - ISO 8601 date string
+ * @returns Formatted date (e.g., "14 Mar 2026")
+ */
+export const formatDate = (isoDate: string): string => {
+  const date = new Date(isoDate)
+
+  // Handle invalid date strings gracefully
+  if (isNaN(date.getTime())) {
+    return isoDate
+  }
+
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
+}
