@@ -86,5 +86,5 @@ export const formatDate = (isoDate: string): string => {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-  }).format(date)
+  }).format(date);
 }
