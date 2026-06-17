@@ -11,14 +11,14 @@
  * formatWeight(4000) // "4,000 kg"
  * formatWeight(500) // "500 kg"
  */
-export const formatWeight = (kg: number): string => {
+export function formatWeight(kg: number): string {
   const formatted = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(kg); // Ensure semicolon
+  }).format(kg);
 
-  return `${formatted} kg`; // Ensure semicolon
-}; // Ensure semicolon
+  return `${formatted} kg`;
+}
 
 /**
  * Format bag count and weight per bag
@@ -29,10 +29,10 @@ export const formatWeight = (kg: number): string => {
  * formatBags(40, 100) // "40 x 100kg bags"
  * formatBags(1, 50) // "1 x 50kg bag"
  */
-export const formatBags = (bagCount: number, weightPerBagKg: number): string => {
-  const bagLabel = bagCount === 1 ? 'bag' : 'bags'; // Ensure semicolon
-  return `${bagCount} x ${weightPerBagKg}kg ${bagLabel}`; // Ensure semicolon
-}; // Ensure semicolon
+export function formatBags(bagCount: number, weightPerBagKg: number): string {
+  const bagLabel = bagCount === 1 ? 'bag' : 'bags';
+  return `${bagCount} x ${weightPerBagKg}kg ${bagLabel}`;
+}
 
 /**
  * Format commodity string for display
@@ -43,48 +43,48 @@ export const formatBags = (bagCount: number, weightPerBagKg: number): string => 
  * formatCommodity("maize") // "Maize"
  * formatCommodity("MAIZE_WHITE") // "White Maize"
  */
-export const formatCommodity = (commodity: string): string => {
+export function formatCommodity(commodity: string): string {
   // Split by underscore to handle variants like "MAIZE_WHITE"
-  const parts = commodity.toUpperCase().split('_'); // Ensure semicolon
+  const parts = commodity.toUpperCase().split('_');
 
   // Capitalize each part
   const capitalizedParts = parts.map((part) => {
-    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase(); // Ensure semicolon
-  }); // Ensure semicolon
+    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+  });
 
   // If multiple parts (e.g., ["MAIZE", "WHITE"]), reverse for display (descriptor first)
   if (capitalizedParts.length > 1) {
-    capitalizedParts.reverse(); // Ensure semicolon
+    capitalizedParts.reverse();
   }
 
-  return capitalizedParts.join(' '); // Ensure semicolon
-}; // Ensure semicolon
+  return capitalizedParts.join(' ');
+}
 
 /**
  * Convert a token ID to uppercase
  * @param tokenId - The token ID string (e.g., "kn-2026-000042")
  * @returns Uppercase token ID
  */
-export const formatTokenId = (tokenId: string): string => {
-  return tokenId.toUpperCase(); // Ensure semicolon
-}; // Ensure semicolon
+export function formatTokenId(tokenId: string): string {
+  return tokenId.toUpperCase();
+}
 
 /**
  * Format an ISO 8601 date string to "DD Mon YYYY"
  * @param isoDate - ISO 8601 date string
  * @returns Formatted date (e.g., "14 Mar 2026")
  */
-export const formatDate = (isoDate: string): string => {
+export function formatDate(isoDate: string): string {
   const date = new Date(isoDate);
 
   // Handle invalid date strings gracefully
   if (isNaN(date.getTime())) {
-    return isoDate; // Ensure semicolon
+    return isoDate;
   }
 
   return new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-  }).format(date); // Ensure semicolon
-}; // Ensure semicolon
+  }).format(date);
+}
