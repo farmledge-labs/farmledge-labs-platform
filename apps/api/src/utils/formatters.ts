@@ -15,10 +15,10 @@ export const formatWeight = (kg: number): string => {
   const formatted = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(kg)
+  }).format(kg);
 
-  return `${formatted} kg`
-}
+  return `${formatted} kg`;
+};
 
 /**
  * Format bag count and weight per bag
@@ -30,9 +30,9 @@ export const formatWeight = (kg: number): string => {
  * formatBags(1, 50) // "1 × 50kg bag"
  */
 export const formatBags = (bagCount: number, weightPerBagKg: number): string => {
-  const bagLabel = bagCount === 1 ? 'bag' : 'bags'
-  return `${bagCount} × ${weightPerBagKg}kg ${bagLabel}`
-}
+  const bagLabel = bagCount === 1 ? 'bag' : 'bags';
+  return `${bagCount} × ${weightPerBagKg}kg ${bagLabel}`;
+};
 
 /**
  * Format commodity string for display
@@ -45,20 +45,20 @@ export const formatBags = (bagCount: number, weightPerBagKg: number): string => 
  */
 export const formatCommodity = (commodity: string): string => {
   // Split by underscore to handle variants like "MAIZE_WHITE"
-  const parts = commodity.toUpperCase().split('_')
+  const parts = commodity.toUpperCase().split('_');
 
   // Capitalize each part
   const capitalizedParts = parts.map((part) => {
-    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
-  })
+    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+  });
 
   // If multiple parts (e.g., ["MAIZE", "WHITE"]), reverse for display (descriptor first)
   if (capitalizedParts.length > 1) {
-    capitalizedParts.reverse()
+    capitalizedParts.reverse();
   }
 
-  return capitalizedParts.join(' ')
-}
+  return capitalizedParts.join(' ');
+};
 
 /**
  * Convert a token ID to uppercase
@@ -66,8 +66,8 @@ export const formatCommodity = (commodity: string): string => {
  * @returns Uppercase token ID
  */
 export const formatTokenId = (tokenId: string): string => {
-  return tokenId.toUpperCase()
-}
+  return tokenId.toUpperCase();
+};
 
 /**
  * Format an ISO 8601 date string to "DD Mon YYYY"
@@ -75,11 +75,11 @@ export const formatTokenId = (tokenId: string): string => {
  * @returns Formatted date (e.g., "14 Mar 2026")
  */
 export const formatDate = (isoDate: string): string => {
-  const date = new Date(isoDate)
+  const date = new Date(isoDate);
 
   // Handle invalid date strings gracefully
   if (isNaN(date.getTime())) {
-    return isoDate
+    return isoDate;
   }
 
   return new Intl.DateTimeFormat('en-GB', {
@@ -87,4 +87,4 @@ export const formatDate = (isoDate: string): string => {
     month: 'short',
     year: 'numeric',
   }).format(date);
-}
+};
