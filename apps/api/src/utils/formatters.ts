@@ -78,3 +78,30 @@ export const formatCommodity = (commodity: string): string => {
 
   return capitalizedParts.join(' ')
 }
+
+/**
+ * Format a token identifier for display by upper-casing it
+ * @param tokenId - Token identifier (e.g., "kn-2026-000042")
+ * @returns Upper-cased token identifier (e.g., "KN-2026-000042")
+ * @example
+ * formatTokenId("kn-2026-000042") // "KN-2026-000042"
+ */
+export const formatTokenId = (tokenId: string): string => {
+  return tokenId.toUpperCase()
+}
+
+/**
+ * Format an ISO date string as "DD Mon YYYY" in UTC
+ * @param isoDate - ISO 8601 date string (e.g., "2026-03-14T00:00:00Z")
+ * @returns Formatted date string (e.g., "14 Mar 2026")
+ * @example
+ * formatDate("2026-03-14T00:00:00Z") // "14 Mar 2026"
+ */
+export const formatDate = (isoDate: string): string => {
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(isoDate))
+}
