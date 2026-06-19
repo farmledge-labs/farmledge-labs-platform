@@ -22,52 +22,69 @@ after(async () => {
 })
 
 test('POST /api/v1/deposits returns 200 stub response', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/deposits`, { method: 'POST' })
+  const res = await fetch(`${baseUrl}/api/v1/deposits`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer test-token' },
+  })
   assert.equal(res.status, 200)
   const body = await res.json()
-  assert.deepEqual(body, { success: true, data: 'STUB — POST /api/v1/deposits' })
+  assert.deepEqual(body, { success: true, data: 'STUB — createDeposit' })
 })
 
 test('POST /api/v1/exits/test-token returns 200 stub response', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/exits/test-token`, { method: 'POST' })
+  const res = await fetch(`${baseUrl}/api/v1/exits/test-token`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer test-token' },
+  })
   assert.equal(res.status, 200)
   const body = await res.json()
-  assert.deepEqual(body, { success: true, data: 'STUB — POST /api/v1/exits/:token_id' })
+  assert.deepEqual(body, { success: true, data: 'STUB — createExit' })
 })
 
 test('GET /api/v1/warehouse/test-warehouse/inventory returns 200 stub response', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/warehouse/test-warehouse/inventory`)
+  const res = await fetch(`${baseUrl}/api/v1/warehouse/test-warehouse/inventory`, {
+    headers: { 'Authorization': 'Bearer test-token' },
+  })
   assert.equal(res.status, 200)
   const body = await res.json()
-  assert.deepEqual(body, { success: true, data: 'STUB — GET /api/v1/warehouse/:warehouse_id/inventory' })
+  assert.deepEqual(body, { success: true, data: 'STUB — getWarehouseInventory' })
 })
 
 test('GET /api/v1/farmers/test-farmer/tokens returns 200 stub response', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/farmers/test-farmer/tokens`)
+  const res = await fetch(`${baseUrl}/api/v1/farmers/test-farmer/tokens`, {
+    headers: { 'Authorization': 'Bearer test-token' },
+  })
   assert.equal(res.status, 200)
   const body = await res.json()
-  assert.deepEqual(body, { success: true, data: 'STUB — GET /api/v1/farmers/:farmer_id/tokens' })
+  assert.deepEqual(body, { success: true, data: 'STUB — getFarmerTokens' })
 })
 
 test('GET /api/v1/farmers/test-farmer/history returns 200 stub response', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/farmers/test-farmer/history`)
+  const res = await fetch(`${baseUrl}/api/v1/farmers/test-farmer/history`, {
+    headers: { 'Authorization': 'Bearer test-token' },
+  })
   assert.equal(res.status, 200)
   const body = await res.json()
-  assert.deepEqual(body, { success: true, data: 'STUB — GET /api/v1/farmers/:farmer_id/history' })
+  assert.deepEqual(body, { success: true, data: 'STUB — getFarmerHistory' })
 })
 
 test('POST /api/v1/transfers returns 200 stub response', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/transfers`, { method: 'POST' })
+  const res = await fetch(`${baseUrl}/api/v1/transfers`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer test-token' },
+  })
   assert.equal(res.status, 200)
   const body = await res.json()
-  assert.deepEqual(body, { success: true, data: 'STUB — POST /api/v1/transfers' })
+  assert.deepEqual(body, { success: true, data: 'STUB — createTransfer' })
 })
 
 test('GET /api/v1/certificates/test-token returns 200 stub response', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/certificates/test-token`)
+  const res = await fetch(`${baseUrl}/api/v1/certificates/test-token`, {
+    headers: { 'Authorization': 'Bearer test-token' },
+  })
   assert.equal(res.status, 200)
   const body = await res.json()
-  assert.deepEqual(body, { success: true, data: 'STUB — GET /api/v1/certificates/:token_id' })
+  assert.deepEqual(body, { success: true, data: 'STUB — getCertificate' })
 })
 
 test('GET /api/v1/lender/farmers/test-farmer/collateral returns 200 stub response', async () => {

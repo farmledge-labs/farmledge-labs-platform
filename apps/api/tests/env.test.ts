@@ -1,11 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, beforeEach, afterEach } from "node:test";
+import assert from "node:assert/strict";
 
 describe("Environment Validation", () => {
   const originalEnv = { ...process.env };
+  let importCount = 0;
+
+  const importConfig = async () => {
+    const { env } = await import(`../src/config/env.js?update=${importCount++}`);
+    return env;
+  };
 
   beforeEach(() => {
-    // Clear the env module cache to allow re-importing with different env vars
-    vi.resetModules();
+    // Clear and restore process.env to clean state
+    process.env = { ...originalEnv };
   });
 
   afterEach(() => {
@@ -23,11 +30,15 @@ describe("Environment Validation", () => {
     process.env.S3_BUCKET = "test-bucket";
     process.env.S3_REGION = "us-east-1";
 
-    const { env: importEnv } = await import("../src/config/env.js");
-    expect(() => {
-      // Access the env object to trigger validation
-      void importEnv.JWT_SECRET;
-    }).toThrow("Missing required environment variable: JWT_SECRET");
+    await assert.rejects(
+      async () => {
+        await importConfig();
+      },
+      (err: Error) => {
+        assert.equal(err.message, "Missing required environment variable: JWT_SECRET");
+        return true;
+      }
+    );
   });
 
   it("throws error when required DATABASE_URL is missing", async () => {
@@ -40,10 +51,15 @@ describe("Environment Validation", () => {
     process.env.S3_BUCKET = "test-bucket";
     process.env.S3_REGION = "us-east-1";
 
-    const { env: importEnv } = await import("../src/config/env.js");
-    expect(() => {
-      void importEnv.DATABASE_URL;
-    }).toThrow("Missing required environment variable: DATABASE_URL");
+    await assert.rejects(
+      async () => {
+        await importConfig();
+      },
+      (err: Error) => {
+        assert.equal(err.message, "Missing required environment variable: DATABASE_URL");
+        return true;
+      }
+    );
   });
 
   it("throws error when required PLATFORM_ADMIN_SECRET is missing", async () => {
@@ -56,30 +72,31 @@ describe("Environment Validation", () => {
     process.env.S3_BUCKET = "test-bucket";
     process.env.S3_REGION = "us-east-1";
 
-    const { env: importEnv } = await import("../src/config/env.js");
-    expect(() => {
-      void importEnv.PLATFORM_ADMIN_SECRET;
-    }).toThrow("Missing required environment variable: PLATFORM_ADMIN_SECRET");
+    await assert.rejects(
+      async () => {
+        await importConfig();
+      },
+      (err: Error) => {
+        assert.equal(err.message, "Missing required environment variable: PLATFORM_ADMIN_SECRET");
+        return true;
+      }
+    );
   });
 
   it("does not log secret values in error messages", async () => {
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
     delete process.env.JWT_SECRET;
     process.env.DATABASE_URL = "postgresql://user:password@localhost/db";
 
-    try {
-      const { env: importEnv } = await import("../src/config/env.js");
-      void importEnv.JWT_SECRET;
-    } catch (err) {
-      const error = err as Error;
-      expect(error.message).not.toContain("password");
-      expect(error.message).not.toContain("user");
-    }
-
-    consoleLogSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
+    await assert.rejects(
+      async () => {
+        await importConfig();
+      },
+      (err: Error) => {
+        assert.ok(!err.message.includes("password"));
+        assert.ok(!err.message.includes("user"));
+        return true;
+      }
+    );
   });
 
   it("uses default values for optional PORT when not provided", async () => {
@@ -93,8 +110,8 @@ describe("Environment Validation", () => {
     process.env.S3_BUCKET = "test-bucket";
     process.env.S3_REGION = "us-east-1";
 
-    const { env: importEnv } = await import("../src/config/env.js");
-    expect(importEnv.PORT).toBe("3000");
+    const importEnv = await importConfig();
+    assert.equal(importEnv.PORT, "3000");
   });
 
   it("successfully loads all required environment variables", async () => {
@@ -108,10 +125,10 @@ describe("Environment Validation", () => {
     process.env.S3_REGION = "us-west-2";
     process.env.PORT = "8000";
 
-    const { env: importEnv } = await import("../src/config/env.js");
-    expect(importEnv.JWT_SECRET).toBe("my-jwt-secret");
-    expect(importEnv.DATABASE_URL).toBe("postgresql://user:pass@localhost:5432/db");
-    expect(importEnv.PLATFORM_ADMIN_SECRET).toBe("admin-secret");
-    expect(importEnv.PORT).toBe("8000");
+    const importEnv = await importConfig();
+    assert.equal(importEnv.JWT_SECRET, "my-jwt-secret");
+    assert.equal(importEnv.DATABASE_URL, "postgresql://user:pass@localhost:5432/db");
+    assert.equal(importEnv.PLATFORM_ADMIN_SECRET, "admin-secret");
+    assert.equal(importEnv.PORT, "8000");
   });
 });
