@@ -88,21 +88,28 @@ test('GET /api/v1/certificates/test-token returns 200 stub response', async () =
 })
 
 test('GET /api/v1/lender/farmers/test-farmer/collateral returns 200 stub response', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/lender/farmers/test-farmer/collateral`)
+  const res = await fetch(`${baseUrl}/api/v1/lender/farmers/test-farmer/collateral`, {
+    headers: { 'X-API-Key': 'test-key' },
+  })
   assert.equal(res.status, 200)
   const body = await res.json()
   assert.deepEqual(body, { success: true, data: 'STUB — GET /api/v1/lender/farmers/:farmer_id/collateral' })
 })
 
 test('GET /api/v1/lender/tokens/test-token/verify returns 200 stub response', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/lender/tokens/test-token/verify`)
+  const res = await fetch(`${baseUrl}/api/v1/lender/tokens/test-token/verify`, {
+    headers: { 'X-API-Key': 'test-key' },
+  })
   assert.equal(res.status, 200)
   const body = await res.json()
   assert.deepEqual(body, { success: true, data: 'STUB — GET /api/v1/lender/tokens/:token_id/verify' })
 })
 
 test('POST /api/v1/lender/tokens/test-token/lock returns 200 stub response', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/lender/tokens/test-token/lock`, { method: 'POST' })
+  const res = await fetch(`${baseUrl}/api/v1/lender/tokens/test-token/lock`, {
+    method: 'POST',
+    headers: { 'X-API-Key': 'test-key' },
+  })
   assert.equal(res.status, 200)
   const body = await res.json()
   assert.deepEqual(body, { success: true, data: 'STUB — POST /api/v1/lender/tokens/:token_id/lock' })
