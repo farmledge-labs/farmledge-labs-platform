@@ -121,7 +121,11 @@ test('POST /api/v1/transfers returns 401 without auth header', async () => {
 test('POST /api/v1/transfers returns 200 with auth header', async () => {
   const res = await fetch(`${baseUrl}/api/v1/transfers`, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer test-token' },
+    headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token_id: 'KN-2026-000001',
+      buyer_wallet_address: 'GABC123',
+    }),
   })
   assert.equal(res.status, 200)
   const body = (await res.json()) as { success?: unknown }

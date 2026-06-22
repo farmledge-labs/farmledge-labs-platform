@@ -68,14 +68,29 @@ test('GET /api/v1/farmers/test-farmer/history returns 200 stub response', async 
   assert.deepEqual(body, { success: true, data: 'STUB — getFarmerHistory' })
 })
 
-test('POST /api/v1/transfers returns 200 stub response', async () => {
+test('test_transfer_schema_valid passes valid transfer body through to stub handler', async () => {
   const res = await fetch(`${baseUrl}/api/v1/transfers`, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer test-token' },
+    headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token_id: 'KN-2026-000001',
+      buyer_wallet_address: 'GABC123',
+    }),
   })
   assert.equal(res.status, 200)
   const body = await res.json()
   assert.deepEqual(body, { success: true, data: 'STUB — createTransfer' })
+})
+
+test('test_transfer_schema_invalid returns 400 with readable error', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/transfers`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token_id: 'KN-2026-000001' }),
+  })
+  assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.deepEqual(body, { success: false, error: 'buyer_wallet_address is required' })
 })
 
 test('GET /api/v1/certificates/test-token returns 200 stub response', async () => {
@@ -105,12 +120,27 @@ test('GET /api/v1/lender/tokens/test-token/verify returns 200 stub response', as
   assert.deepEqual(body, { success: true, data: 'STUB — GET /api/v1/lender/tokens/:token_id/verify' })
 })
 
-test('POST /api/v1/lender/tokens/test-token/lock returns 200 stub response', async () => {
+test('test_lock_schema_valid passes valid lock body through to stub handler', async () => {
   const res = await fetch(`${baseUrl}/api/v1/lender/tokens/test-token/lock`, {
     method: 'POST',
-    headers: { 'X-API-Key': 'test-key' },
+    headers: { 'X-API-Key': 'test-key', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      lender_id: 'lender-1',
+      loan_reference: 'loan-2026-0001',
+    }),
   })
   assert.equal(res.status, 200)
   const body = await res.json()
   assert.deepEqual(body, { success: true, data: 'STUB — POST /api/v1/lender/tokens/:token_id/lock' })
+})
+
+test('test_lock_schema_invalid returns 400 with readable error', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/lender/tokens/test-token/lock`, {
+    method: 'POST',
+    headers: { 'X-API-Key': 'test-key', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ loan_reference: 'loan-2026-0001' }),
+  })
+  assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.deepEqual(body, { success: false, error: 'lender_id is required' })
 })
