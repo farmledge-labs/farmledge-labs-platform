@@ -71,7 +71,8 @@ test('GET /api/v1/farmers/test-farmer/history returns 200 stub response', async 
 test('POST /api/v1/transfers returns 200 stub response', async () => {
   const res = await fetch(`${baseUrl}/api/v1/transfers`, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer test-token' },
+    headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token_id: 'KN-2026-000001', buyer_wallet_address: 'GABC...' }),
   })
   assert.equal(res.status, 200)
   const body = await res.json()
@@ -108,7 +109,8 @@ test('GET /api/v1/lender/tokens/test-token/verify returns 200 stub response', as
 test('POST /api/v1/lender/tokens/test-token/lock returns 200 stub response', async () => {
   const res = await fetch(`${baseUrl}/api/v1/lender/tokens/test-token/lock`, {
     method: 'POST',
-    headers: { 'X-API-Key': 'test-key' },
+    headers: { 'X-API-Key': 'test-key', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lender_id: 'lender-1', loan_reference: 'LOAN-001' }),
   })
   assert.equal(res.status, 200)
   const body = await res.json()
