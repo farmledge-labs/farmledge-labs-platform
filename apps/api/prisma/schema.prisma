@@ -9,3 +9,29 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Farmer {
+  id             String   @id @default(uuid())
+  fullName       String
+  phone          String   @unique
+  stellarWallet  String   @unique
+  bvnVerified    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("farmers")
+}
+
+model Warehouse {
+  id               String   @id @default(uuid())
+  name             String
+  location         String
+  state            String
+  certified        Boolean  @default(false)
+  capacityTonnes   Float
+  custodianWallet  String   @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("warehouses")
+}
