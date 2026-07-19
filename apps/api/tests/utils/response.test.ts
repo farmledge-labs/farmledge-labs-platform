@@ -5,16 +5,19 @@ import { ok, created, badRequest, unauthorized, notFound, serverError } from '..
 
 test('Response helpers', async (t) => {
   const mockResponse = () => {
-    const res: any = {};
-    res.status = (code: number) => {
-      res.statusCode = code;
-      return res;
+    const res: Partial<Response> & { statusCode: number; body: unknown } = {
+      status(code: number) {
+        this.statusCode = code;
+        return this as Response;
+      },
+      json(data: unknown) {
+        this.body = data;
+        return this as Response;
+      },
+      statusCode: 0,
+      body: undefined,
     };
-    res.json = (data: any) => {
-      res.body = data;
-      return res;
-    };
-    return res as Response & { statusCode: number, body: any };
+    return res as Response & { statusCode: number; body: unknown };
   };
 
   await t.test('ok helper', () => {
