@@ -86,3 +86,24 @@ model Token {
 
   @@map("tokens")
 }
+model Lender {
+  id            String   @id @default(uuid())
+  companyName   String
+  contactEmail  String   @unique
+  approved      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  apiKeys       ApiKey[]
+  @@map("lenders")
+}
+
+model ApiKey {
+  id          String    @id @default(uuid())
+  lenderId    String
+  lender      Lender    @relation(fields: [lenderId], references: [id])
+  keyHash     String    @unique
+  label       String
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  @@map("api_keys")
+}
