@@ -1,7 +1,7 @@
 import { type Request, type Response } from 'express'
 import * as stellarService from '../services/stellar.service.js'
 import * as db from '../db/index.js'
-import { type TokenRecord } from '@farmledge/shared/types.js'
+import { type TokenRecord } from '@farmledge/shared'
 
 export const createDeposit = async (req: Request, res: Response) => {
   // The `validate` middleware has already parsed and validated req.body.
@@ -21,10 +21,13 @@ export const createDeposit = async (req: Request, res: Response) => {
     }
 
     // Step 3: If no duplicate, create the new token record in the database.
-    const newToken: Omit<TokenRecord, 'stellar_explorer_link'> = {
+    const newToken: TokenRecord = {
       ...depositData,
       token_id: tokenId,
       farmer_id: depositData.farmerId,
+      commodity: depositData.commodity,
+      grade: depositData.grade,
+      warehouse_id: depositData.warehouseId,
       weight_per_bag_kg: depositData.weightPerBagKg,
       bag_count: depositData.bagCount,
       total_weight_kg: depositData.bagCount * depositData.weightPerBagKg,
@@ -36,6 +39,7 @@ export const createDeposit = async (req: Request, res: Response) => {
       deposit_date: new Date().toISOString(),
       status: 'active',
       is_locked: false,
+      stellar_explorer_link: `https://stellar.expert/explorer/testnet/tx/${txHash}`,
     }
 
     const createdToken = await db.createToken(newToken)
