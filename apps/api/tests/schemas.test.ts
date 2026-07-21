@@ -68,3 +68,43 @@ test('test_lock_schema_invalid — missing field returns 400 with readable error
   assert.equal(body.success, false)
   assert.match(body.error, /loan_reference is required/)
 })
+
+test('test_split_schema_valid — valid split request body passes validation', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/tokens/KN-2026-000001/split`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ split_amount_kg: 1500 }),
+  })
+  assert.equal(res.status, 200)
+  const body = await res.json()
+  assert.equal(body.success, true)
+  assert.equal(body.data.parent_token_id, 'KN-2026-000001')
+  assert.equal(body.data.children.length, 2)
+  assert.equal(body.data.children[0].total_weight_kg, 1500)
+  assert.equal(body.data.children[1].total_weight_kg, 2500)
+})
+
+test('test_split_schema_invalid — missing split_amount_kg returns 400 with error', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/tokens/KN-2026-000001/split`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  })
+  assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.equal(body.success, false)
+  assert.match(body.error, /split_amount_kg is required/)
+})
+
+test('test_split_schema_invalid — negative split_amount_kg returns 400 with error', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/tokens/KN-2026-000001/split`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ split_amount_kg: -500 }),
+  })
+  assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.equal(body.success, false)
+  assert.match(body.error, /split_amount_kg must be greater than 0/)
+})
+

@@ -17,3 +17,10 @@ export const LockSchema = z.object({
     .string({ required_error: 'loan_reference is required' })
     .min(1, 'loan_reference is required'),
 })
+
+export const SplitTokenSchema = z.object({
+  split_amount_kg: z
+    .number({ required_error: 'split_amount_kg is required' })
+    .positive('split_amount_kg must be greater than 0'),
+})
+
