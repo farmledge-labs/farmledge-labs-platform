@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { requireJWT } from '../middleware/auth.middleware.js'
-import * as custodianController from '../controllers/custodian.controller.js'
+import * as custodianController from './custodian.controller.js'
 
 export const custodianRouter = Router()
 
