@@ -84,6 +84,11 @@ model Token {
   warehouseId String
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
 
+  // Lineage: tracks which token this was split from
+  parentTokenId String?
+  parent        Token?  @relation("TokenLineage", fields: [parentTokenId], references: [tokenId])
+  children      Token[] @relation("TokenLineage")
+
   @@map("tokens")
 }
 model Lender {
