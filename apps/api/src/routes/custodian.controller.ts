@@ -1,8 +1,8 @@
-import { type Request, type Response } from 'express'
+git import { type Request, type Response } from 'express'
 import { z } from 'zod'
 import * as stellarService from '../services/stellar.service.js'
 import * as db from '../db/index.js'
-import { type TokenRecord } from '../../../../packages/shared/src/types.js'
+import { type TokenRecord } from '@farmledge/shared/types.js'
 
 const depositSchema = z.object({
   farmerId: z.string(),

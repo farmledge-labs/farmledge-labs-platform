@@ -24,16 +24,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: TypeScript type check (API)
-        run: npx tsc --noEmit
-        working-directory: apps/api
-
-      - name: TypeScript type check (shared)
-        run: npx tsc --noEmit
-        working-directory: packages/shared
+      - name: TypeScript type check
+        run: npm run build
 
       - name: ESLint
         run: npm run lint
+
 
   test:
     name: Run Tests
@@ -100,20 +96,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build shared
-        run: npm run build --workspace=packages/shared
-
-      - name: Build API
-        run: npm run build:api
-
-      - name: Build Custodian
-        run: npm run build:custodian
-
-      - name: Build Farmer
-        run: npm run build:farmer
-
-      - name: Build Lender
-        run: npm run build:lender
+      - name: Build all packages
+        run: npm run build
 
       - name: Upload API build artifact
         uses: actions/upload-artifact@v4

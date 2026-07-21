@@ -12,6 +12,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write .",
+    "build": "tsc --build",
     "build:api": "npm run build --workspace=apps/api",
     "build:custodian": "npm run build --workspace=apps/custodian",
     "build:farmer": "npm run build --workspace=apps/farmer",
