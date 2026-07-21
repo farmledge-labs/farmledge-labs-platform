@@ -16,6 +16,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
+      - run: npm test
       - run: npm run build:api
       - run: npm run build:custodian
       - run: npm run build:farmer

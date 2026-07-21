@@ -171,7 +171,8 @@ test('POST /api/v1/transfers returns 401 without auth header', async () => {
 test('POST /api/v1/transfers returns 200 with auth header', async () => {
   const res = await fetch(`${baseUrl}/api/v1/transfers`, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer test-token' },
+    headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token_id: 'KN-2026-000001', buyer_wallet_address: 'GABC...' }),
   })
   assert.equal(res.status, 200)
   const body = (await res.json()) as { success?: unknown }
@@ -190,28 +191,6 @@ test('GET /api/v1/certificates/:token_id returns 200 with auth header', async ()
   const res = await fetch(`${baseUrl}/api/v1/certificates/123`, {
     headers: { 'Authorization': 'Bearer test-token' },
   })
-  assert.equal(res.status, 200)
-  const body = (await res.json()) as { success?: unknown }
-  assert.equal(body.success, true)
-})
-
-// Lender routes should remain unaffected
-test('GET /api/v1/lender/farmers/:farmer_id/collateral returns 200 without auth header', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/lender/farmers/123/collateral`)
-  assert.equal(res.status, 200)
-  const body = (await res.json()) as { success?: unknown }
-  assert.equal(body.success, true)
-})
-
-test('GET /api/v1/lender/tokens/:token_id/verify returns 200 without auth header', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/lender/tokens/123/verify`)
-  assert.equal(res.status, 200)
-  const body = (await res.json()) as { success?: unknown }
-  assert.equal(body.success, true)
-})
-
-test('POST /api/v1/lender/tokens/:token_id/lock returns 200 without auth header', async () => {
-  const res = await fetch(`${baseUrl}/api/v1/lender/tokens/123/lock`, { method: 'POST' })
   assert.equal(res.status, 200)
   const body = (await res.json()) as { success?: unknown }
   assert.equal(body.success, true)

@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TokenStatus {
+  active
+  transferred
+  exited
+}
+
+enum Commodity {
+  MAIZE_WHITE
+  MAIZE_YELLOW
+  SESAME
+}
+
+enum Grade {
+  Grade_A
+  Grade_B
+  Grade_C
+}
+
+model Farmer {
+  id            String   @id @default(uuid())
+  fullName      String
+  phone         String   @unique
+  stellarWallet String   @unique
+  bvnVerified   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tokens Token[]
+
+  @@map("farmers")
+}
+
+model Warehouse {
+  id              String   @id @default(uuid())
+  name            String
+  location        String
+  state           String
+  certified       Boolean  @default(false)
+  capacityTonnes  Float
+  custodianWallet String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tokens Token[]
+
+  @@map("warehouses")
+}
+
+model Token {
+  id                  String      @id @default(uuid())
+  tokenId             String      @unique // format: "KN-2026-000042"
+  commodity           Commodity
+  grade               Grade
+  bagCount            Int
+  weightPerBagKg      Int
+  totalWeightKg       Int         // always bagCount * weightPerBagKg
+  status              TokenStatus @default(active)
+  isLocked            Boolean     @default(false)
+  lockedByLenderId    String?
+  loanReference       String?
+  txHash              String      @unique
+  stellarExplorerLink String
+  depositDate         DateTime    @default(now())
+  exitDate            DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  farmerId  String
+  farmer    Farmer    @relation(fields: [farmerId], references: [id])
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+  // Lineage: tracks which token this was split from
+  parentTokenId String?
+  parent        Token?  @relation("TokenLineage", fields: [parentTokenId], references: [tokenId])
+  children      Token[] @relation("TokenLineage")
+
+  @@map("tokens")
+}
+model Lender {
+  id            String   @id @default(uuid())
+  companyName   String
+  contactEmail  String   @unique
+  approved      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  apiKeys       ApiKey[]
+  @@map("lenders")
+}
+
+model ApiKey {
+  id          String    @id @default(uuid())
+  lenderId    String
+  lender      Lender    @relation(fields: [lenderId], references: [id])
+  keyHash     String    @unique
+  label       String
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  @@map("api_keys")
+}

@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+package-lock
 .pnp
 .pnp.js
 
@@ -33,3 +34,11 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# Prisma
+apps/api/prisma/migrations/
+apps/api/src/generated/
+
+# Prisma
+apps/api/prisma/migrations/
+apps/api/src/generated/

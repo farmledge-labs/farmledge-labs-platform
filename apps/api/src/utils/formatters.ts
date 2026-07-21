@@ -1,7 +1,20 @@
 /**
- * Pure utility functions for formatting display-ready strings
- * No external dependencies — Node built-ins only
+ * Pure display-formatting utilities used by controllers and certificate
+ * generation. No external dependencies — Node built-ins only.
  */
+
+const COMMODITY_LABELS: Record<string, string> = {
+  MAIZE_WHITE: 'White Maize',
+  MAIZE_YELLOW: 'Yellow Maize',
+  SORGHUM: 'Sorghum',
+  SOYBEAN: 'Soybean',
+  RICE_PADDY: 'Paddy Rice',
+  GROUNDNUT: 'Groundnut',
+  COWPEA: 'Cowpea',
+  MILLET: 'Millet',
+  CASSAVA: 'Cassava',
+  COCOA: 'Cocoa',
+}
 
 /**
  * Format weight in kilograms with thousands separator
@@ -31,7 +44,12 @@ export const formatWeight = (kg: number): string => {
  */
 export const formatBags = (bagCount: number, weightPerBagKg: number): string => {
   const bagLabel = bagCount === 1 ? 'bag' : 'bags'
-  return `${bagCount} × ${weightPerBagKg}kg ${bagLabel}`
+  const formattedCount = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(bagCount)
+
+  return `${formattedCount} × ${weightPerBagKg}kg ${bagLabel}`
 }
 
 /**
@@ -44,6 +62,12 @@ export const formatBags = (bagCount: number, weightPerBagKg: number): string => 
  * formatCommodity("MAIZE_WHITE") // "White Maize"
  */
 export const formatCommodity = (commodity: string): string => {
+  // Check known labels first
+  const known = COMMODITY_LABELS[commodity]
+  if (known) {
+    return known
+  }
+
   // Split by underscore to handle variants like "MAIZE_WHITE"
   const parts = commodity.toUpperCase().split('_')
 
@@ -52,10 +76,33 @@ export const formatCommodity = (commodity: string): string => {
     return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
   })
 
-  // If multiple parts (e.g., ["MAIZE", "WHITE"]), reverse for display (descriptor first)
-  if (capitalizedParts.length > 1) {
-    capitalizedParts.reverse()
-  }
-
+  // Join parts in original order (known labels are handled above)
   return capitalizedParts.join(' ')
+}
+
+/**
+ * Format a token identifier for display by upper-casing it
+ * @param tokenId - Token identifier (e.g., "kn-2026-000042")
+ * @returns Upper-cased token identifier (e.g., "KN-2026-000042")
+ * @example
+ * formatTokenId("kn-2026-000042") // "KN-2026-000042"
+ */
+export const formatTokenId = (tokenId: string): string => {
+  return tokenId.toUpperCase()
+}
+
+/**
+ * Format an ISO date string as "DD Mon YYYY" in UTC
+ * @param isoDate - ISO 8601 date string (e.g., "2026-03-14T00:00:00Z")
+ * @returns Formatted date string (e.g., "14 Mar 2026")
+ * @example
+ * formatDate("2026-03-14T00:00:00Z") // "14 Mar 2026"
+ */
+export const formatDate = (isoDate: string): string => {
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(isoDate))
 }

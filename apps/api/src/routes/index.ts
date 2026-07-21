@@ -5,6 +5,6 @@ import { lenderRouter } from './lender.routes.js'
 
 export const router = Router()
 
-router.use(custodianRouter)
-router.use(farmerRouter)
-router.use(lenderRouter)
+router.use('/api/v1', custodianRouter)
+router.use('/api/v1', farmerRouter)
+router.use('/api/v1/lender', lenderRouter)
