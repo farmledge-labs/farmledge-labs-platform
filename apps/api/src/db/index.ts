@@ -1,4 +1,4 @@
-import { type TokenRecord } from 'shared/src/types'
+import { type TokenRecord } from '../../../shared/src/types.js'
 
 // In-memory store for mocking DB
 const tokens: TokenRecord[] = []

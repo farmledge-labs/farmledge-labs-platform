@@ -4,9 +4,7 @@ import * as custodianController from '../controllers/custodian.controller.js'
 
 export const custodianRouter = Router()
 
-custodianRouter.post('/deposits', requireJWT, (req, res) => {
-  res.status(200).json({ success: true, data: 'STUB — createDeposit' })
-})
+custodianRouter.post('/deposits', requireJWT, custodianController.createDeposit)
 
 custodianRouter.post('/exits/:token_id', requireJWT, (req, res) => {
   res.status(200).json({ success: true, data: 'STUB — createExit' })
