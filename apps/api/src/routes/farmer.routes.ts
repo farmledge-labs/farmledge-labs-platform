@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { requireJWT } from '../middleware/auth.middleware.js'
 import { validate } from '../middleware/validate.middleware.js'
-import { TransferSchema } from '../schemas/index.js'
+import { TransferSchema } from '../schemas/farmer.schemas.js'
 
 export const farmerRouter = Router()
 

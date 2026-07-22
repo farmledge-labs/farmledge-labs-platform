@@ -1,8 +1,15 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "rootDir": "src",
     "outDir": "dist",
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@farmledge/shared": ["../../packages/shared/src/index.ts"],
+      "@farmledge/shared/*": ["../../packages/shared/src/*"]
+    }
   },
-  "include": ["src", "prisma"]
+  "include": ["src"]
 }

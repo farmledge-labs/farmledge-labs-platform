@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { requireAPIKey } from '../middleware/auth.middleware.js'
 import { validate } from '../middleware/validate.middleware.js'
-import { LockSchema } from '../schemas/index.js'
+import { LockSchema } from '../schemas/lender.schemas.js'
 
 export const lenderRouter = Router()
 
