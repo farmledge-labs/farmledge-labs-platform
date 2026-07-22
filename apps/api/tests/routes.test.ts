@@ -118,3 +118,24 @@ test('POST /api/v1/lender/tokens/test-token/lock returns 200 stub response', asy
   const body = await res.json()
   assert.deepEqual(body, { success: true, data: 'STUB — POST /api/v1/lender/tokens/:token_id/lock' })
 })
+
+test('POST /api/v1/tokens/:id/split returns 200 and split child token details', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/tokens/KN-2026-000042/split`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ split_amount_kg: 1500 }),
+  })
+  assert.equal(res.status, 200)
+  const body = await res.json()
+  assert.equal(body.success, true)
+  assert.equal(body.data.parent_token_id, 'KN-2026-000042')
+  assert.equal(body.data.status, 'exited')
+  assert.equal(body.data.children.length, 2)
+  assert.equal(body.data.children[0].token_id, 'KN-2026-000042-C1')
+  assert.equal(body.data.children[0].total_weight_kg, 1500)
+  assert.equal(body.data.children[0].parent_token_id, 'KN-2026-000042')
+  assert.equal(body.data.children[1].token_id, 'KN-2026-000042-C2')
+  assert.equal(body.data.children[1].total_weight_kg, 2500)
+  assert.equal(body.data.children[1].parent_token_id, 'KN-2026-000042')
+})
+
