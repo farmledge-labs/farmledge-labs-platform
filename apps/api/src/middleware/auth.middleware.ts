@@ -1,4 +1,5 @@
 import { type Request, type Response, type NextFunction } from 'express'
+import { verifyToken } from '../lib/jwt.js'
 
 export const requireJWT = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization
@@ -6,7 +7,21 @@ export const requireJWT = (req: Request, res: Response, next: NextFunction): voi
     res.status(401).json({ success: false, error: 'Unauthorized' })
     return
   }
-  next()
+
+  const token = authHeader.split(' ')[1]
+  if (!token) {
+    res.status(401).json({ success: false, error: 'Unauthorized' })
+    return
+  }
+
+  try {
+    const payload = verifyToken(token)
+    // Attach user payload to request for downstream handlers
+    ;(req as any).user = payload
+    next()
+  } catch (error) {
+    res.status(401).json({ success: false, error: 'Unauthorized' })
+  }
 }
 
 /**

@@ -2,9 +2,11 @@ import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import type { Server } from 'node:http'
 import app from '../src/app.js'
+import { signToken } from '../src/lib/jwt.js'
 
 let server: Server
 let baseUrl: string
+const validToken = signToken({ sub: 'test-user', role: 'farmer' })
 
 before(async () => {
   await new Promise<void>((resolve) => {
@@ -24,7 +26,7 @@ after(async () => {
 test('test_transfer_schema_valid — valid body passes through to stub handler', async () => {
   const res = await fetch(`${baseUrl}/api/v1/transfers`, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ token_id: 'KN-2026-000001', buyer_wallet_address: 'GABC...' }),
   })
   assert.equal(res.status, 200)
@@ -35,7 +37,7 @@ test('test_transfer_schema_valid — valid body passes through to stub handler',
 test('test_transfer_schema_invalid — missing field returns 400 with readable error', async () => {
   const res = await fetch(`${baseUrl}/api/v1/transfers`, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ token_id: 'KN-2026-000001' }),
   })
   assert.equal(res.status, 400)
@@ -66,3 +68,43 @@ test('test_lock_schema_invalid — missing field returns 400 with readable error
   assert.equal(body.success, false)
   assert.match(body.error, /loan_reference is required/)
 })
+
+test('test_split_schema_valid — valid split request body passes validation', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/tokens/KN-2026-000001/split`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ split_amount_kg: 1500 }),
+  })
+  assert.equal(res.status, 200)
+  const body = await res.json()
+  assert.equal(body.success, true)
+  assert.equal(body.data.parent_token_id, 'KN-2026-000001')
+  assert.equal(body.data.children.length, 2)
+  assert.equal(body.data.children[0].total_weight_kg, 1500)
+  assert.equal(body.data.children[1].total_weight_kg, 2500)
+})
+
+test('test_split_schema_invalid — missing split_amount_kg returns 400 with error', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/tokens/KN-2026-000001/split`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  })
+  assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.equal(body.success, false)
+  assert.match(body.error, /split_amount_kg is required/)
+})
+
+test('test_split_schema_invalid — negative split_amount_kg returns 400 with error', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/tokens/KN-2026-000001/split`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ split_amount_kg: -500 }),
+  })
+  assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.equal(body.success, false)
+  assert.match(body.error, /split_amount_kg must be greater than 0/)
+})
+

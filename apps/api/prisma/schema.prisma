@@ -84,9 +84,14 @@ model Token {
   warehouseId String
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
 
-  // Lineage: tracks which token this was split from
+  /// The tokenId of the parent token from which this token was minted by a Split operation.
+  /// Null for root tokens that were not created by a split.
+  /// Both children produced by a single split share the same parentTokenId value.
   parentTokenId String?
+  /// Relation to the parent token. Used to traverse from child to parent.
   parent        Token?  @relation("TokenLineage", fields: [parentTokenId], references: [tokenId])
+  /// Relation to all child tokens created by splitting this token.
+  /// A token that has never been split will have an empty children array.
   children      Token[] @relation("TokenLineage")
 
   @@map("tokens")

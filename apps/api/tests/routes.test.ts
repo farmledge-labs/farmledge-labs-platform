@@ -2,9 +2,11 @@ import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import type { Server } from 'node:http'
 import app from '../src/app.js'
+import { signToken } from '../src/lib/jwt.js'
 
 let server: Server
 let baseUrl: string
+const validToken = signToken({ sub: 'test-user', role: 'farmer' })
 
 before(async () => {
   await new Promise<void>((resolve) => {
@@ -24,7 +26,7 @@ after(async () => {
 test('POST /api/v1/deposits returns 200 stub response', async () => {
   const res = await fetch(`${baseUrl}/api/v1/deposits`, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer test-token' },
+    headers: { 'Authorization': `Bearer ${validToken}` },
   })
   assert.equal(res.status, 200)
   const body = await res.json()
@@ -34,7 +36,7 @@ test('POST /api/v1/deposits returns 200 stub response', async () => {
 test('POST /api/v1/exits/test-token returns 200 stub response', async () => {
   const res = await fetch(`${baseUrl}/api/v1/exits/test-token`, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer test-token' },
+    headers: { 'Authorization': `Bearer ${validToken}` },
   })
   assert.equal(res.status, 200)
   const body = await res.json()
@@ -43,7 +45,7 @@ test('POST /api/v1/exits/test-token returns 200 stub response', async () => {
 
 test('GET /api/v1/warehouse/test-warehouse/inventory returns 200 stub response', async () => {
   const res = await fetch(`${baseUrl}/api/v1/warehouse/test-warehouse/inventory`, {
-    headers: { 'Authorization': 'Bearer test-token' },
+    headers: { 'Authorization': `Bearer ${validToken}` },
   })
   assert.equal(res.status, 200)
   const body = await res.json()
@@ -52,7 +54,7 @@ test('GET /api/v1/warehouse/test-warehouse/inventory returns 200 stub response',
 
 test('GET /api/v1/farmers/test-farmer/tokens returns 200 stub response', async () => {
   const res = await fetch(`${baseUrl}/api/v1/farmers/test-farmer/tokens`, {
-    headers: { 'Authorization': 'Bearer test-token' },
+    headers: { 'Authorization': `Bearer ${validToken}` },
   })
   assert.equal(res.status, 200)
   const body = await res.json()
@@ -61,7 +63,7 @@ test('GET /api/v1/farmers/test-farmer/tokens returns 200 stub response', async (
 
 test('GET /api/v1/farmers/test-farmer/history returns 200 stub response', async () => {
   const res = await fetch(`${baseUrl}/api/v1/farmers/test-farmer/history`, {
-    headers: { 'Authorization': 'Bearer test-token' },
+    headers: { 'Authorization': `Bearer ${validToken}` },
   })
   assert.equal(res.status, 200)
   const body = await res.json()
@@ -71,7 +73,7 @@ test('GET /api/v1/farmers/test-farmer/history returns 200 stub response', async 
 test('POST /api/v1/transfers returns 200 stub response', async () => {
   const res = await fetch(`${baseUrl}/api/v1/transfers`, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ token_id: 'KN-2026-000001', buyer_wallet_address: 'GABC...' }),
   })
   assert.equal(res.status, 200)
@@ -81,7 +83,7 @@ test('POST /api/v1/transfers returns 200 stub response', async () => {
 
 test('GET /api/v1/certificates/test-token returns 200 stub response', async () => {
   const res = await fetch(`${baseUrl}/api/v1/certificates/test-token`, {
-    headers: { 'Authorization': 'Bearer test-token' },
+    headers: { 'Authorization': `Bearer ${validToken}` },
   })
   assert.equal(res.status, 200)
   const body = await res.json()
@@ -116,3 +118,24 @@ test('POST /api/v1/lender/tokens/test-token/lock returns 200 stub response', asy
   const body = await res.json()
   assert.deepEqual(body, { success: true, data: 'STUB — POST /api/v1/lender/tokens/:token_id/lock' })
 })
+
+test('POST /api/v1/tokens/:id/split returns 200 and split child token details', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/tokens/KN-2026-000042/split`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${validToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ split_amount_kg: 1500 }),
+  })
+  assert.equal(res.status, 200)
+  const body = await res.json()
+  assert.equal(body.success, true)
+  assert.equal(body.data.parent_token_id, 'KN-2026-000042')
+  assert.equal(body.data.status, 'exited')
+  assert.equal(body.data.children.length, 2)
+  assert.equal(body.data.children[0].token_id, 'KN-2026-000042-C1')
+  assert.equal(body.data.children[0].total_weight_kg, 1500)
+  assert.equal(body.data.children[0].parent_token_id, 'KN-2026-000042')
+  assert.equal(body.data.children[1].token_id, 'KN-2026-000042-C2')
+  assert.equal(body.data.children[1].total_weight_kg, 2500)
+  assert.equal(body.data.children[1].parent_token_id, 'KN-2026-000042')
+})
+
