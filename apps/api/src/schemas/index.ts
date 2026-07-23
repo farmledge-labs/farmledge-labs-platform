@@ -1,6 +1,7 @@
 export * from './custodian.schemas.js'
 export * from './farmer.schemas.js'
 export * from './lender.schemas.js'
+export * from './upload.schemas.js'
 import { z } from 'zod'
 
 export const TransferSchema = z.object({

@@ -8,7 +8,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc --project tsconfig.build.json",
     "start": "node dist/server.js",
-    "test": "tsx --test",
+    "test": "node --env-file=.env --import=tsx --test tests/health.test.ts tests/routes.test.ts tests/auth.test.ts tests/api-key.test.ts tests/jwt.test.ts tests/env.test.ts tests/schemas.test.ts tests/bagSizes.test.ts tests/uploads.test.ts tests/utils/formatters.test.ts tests/utils/response.test.ts tests/middleware/error.test.ts",
     "lint": "eslint src --ext .ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
