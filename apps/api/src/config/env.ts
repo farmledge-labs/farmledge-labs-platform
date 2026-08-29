@@ -17,6 +17,7 @@ export const env = {
   DATABASE_URL: requireEnv("DATABASE_URL"),
   STELLAR_NETWORK: requireEnv("STELLAR_NETWORK"),
   HORIZON_URL: requireEnv("HORIZON_URL"),
+  STELLAR_PLATFORM_SECRET: requireEnv("STELLAR_PLATFORM_SECRET"),
   PLATFORM_ADMIN_SECRET: requireEnv("PLATFORM_ADMIN_SECRET"),
   S3_BUCKET: requireEnv("S3_BUCKET"),
   S3_REGION: requireEnv("S3_REGION"),
@@ -32,6 +33,7 @@ if (
     "DATABASE_URL",
     "PLATFORM_ADMIN_SECRET",
     "LENDER_API_KEY_SALT",
+    "STELLAR_PLATFORM_SECRET",
   ];
   for (const secret of secrets) {
     if (process.env[secret]) {
