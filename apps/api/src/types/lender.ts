@@ -1,49 +1,72 @@
 /**
- * Types for the LEND-2 deep token verification report.
- *
- * NOTE: NGN values appear ONLY in this report.  Every other Farmledge view
- * shows physical quantities.  Lenders need an estimated collateral value to
- * make a loan decision — that is the deliberate exception documented in LEND-2.
- *
- * These types are also exported from packages/shared for frontend consumers.
- * The API sources them here to avoid a circular build dependency on the
- * shared package's dist artefacts.
+ * Lender-facing API types — LEND-2 / LEND-3
  */
+
+// ── LEND-3 — Lock token ───────────────────────────────────────────────────────
+
+/** Validated request body for POST /lender/tokens/:token_id/lock */
+export interface LockRequestBody {
+  lender_id: string
+  loan_reference: string
+}
+
+/** Snapshot of the token included in the lock response */
+export interface LockedTokenSnapshot {
+  id: string
+  tokenId: string
+  commodity: string
+  grade: string
+  bagCount: number
+  weightPerBagKg: number
+  totalWeightKg: number
+  status: string
+  txHash: string
+  depositDate: string
+}
+
+/** Response body for a successful lock */
+export interface LockTokenResponse {
+  /** Human-readable token ID */
+  tokenId: string
+  /** Always true on success */
+  isLocked: boolean
+  /** Lender ID that applied the lock */
+  lockedByLenderId: string
+  /** Loan reference recorded on-chain and in DB */
+  loanReference: string
+  /** Stellar transaction hash of the lock manageData tx */
+  lockTxHash: string
+  /** Stellar explorer link for the lock tx */
+  lockExplorerLink: string
+  /** ISO 8601 timestamp of when the lock was applied */
+  lockedAt: string
+  /** Token details at the time of locking */
+  token: LockedTokenSnapshot
+}
+
+// ── LEND-2 — Verify token ─────────────────────────────────────────────────────
 
 /** On-chain status as seen by Horizon at the time of the request. */
 export type ChainStatusLive =
-  | 'active'       // tx found, no transfer memo
-  | 'transferred'  // tx found with TRANSFER memo
-  | 'exited'       // tx not found (404) — token has left the ledger
-  | 'unreachable'  // Horizon could not be reached — status unknown
+  | 'active'
+  | 'transferred'
+  | 'exited'
+  | 'unreachable'
 
 /** Aggregated lendability flag */
 export type LendabilityVerdict = 'ELIGIBLE' | 'INELIGIBLE'
 
-/** Individual verification flag contributing to overall lendability. */
+/** Individual verification flag */
 export interface VerificationFlag {
-  /** Machine-readable flag name */
   flag: string
-  /** True = check passed, false = check failed */
   passed: boolean
-  /** Human-readable explanation for the lender */
   note: string
 }
 
-/**
- * Deep verification report returned by GET /api/v1/lender/tokens/:token_id/verify
- *
- * All timestamps are ISO 8601 strings.
- * estimatedValueNgn is an integer in whole Naira.  It MUST only appear in
- * this response type and nowhere else in the API response surface.
- */
+/** Deep verification report (LEND-2) */
 export interface VerifyTokenReport {
-  /** Internal DB UUID of the token */
   id: string
-  /** Human-readable token ID (e.g. KN-2026-000042) */
   tokenId: string
-
-  /** Physical commodity details */
   commodity: string
   grade: string
   bagCount: number

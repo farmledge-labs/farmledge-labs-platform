@@ -7,7 +7,7 @@ import { requireJWT } from '../middleware/auth.middleware.js'
 import { validate } from '../middleware/validate.middleware.js'
 import { PresignUploadSchema } from '../schemas/index.js'
 import { s3, S3_BUCKET } from '../lib/s3.js'
-import { ok, badRequest, serverError } from '../utils/response.js'
+import { ok, serverError } from '../utils/response.js'
 import type { Request, Response } from 'express'
 
 export const uploadRouter = Router()

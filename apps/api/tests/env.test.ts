@@ -20,20 +20,25 @@ describe("Environment Validation", () => {
     process.env = { ...originalEnv };
   });
 
+  /** All required vars except the one under test */
+  const fullEnv = () => ({
+    JWT_SECRET: "test-secret",
+    DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+    PLATFORM_ADMIN_SECRET: "test-admin-secret",
+    LENDER_API_KEY_SALT: "test-salt",
+    STELLAR_NETWORK: "testnet",
+    HORIZON_URL: "https://horizon-testnet.stellar.org",
+    STELLAR_PLATFORM_SECRET: "SCZANGBA5RLXM6HIERL3WTJFB56Y4RYBUGGUWLPQKDIBPXHKNE4ACBFF",
+    S3_BUCKET: "test-bucket",
+    S3_REGION: "us-east-1",
+  });
+
   it("throws error when required JWT_SECRET is missing", async () => {
+    Object.assign(process.env, fullEnv());
     delete process.env.JWT_SECRET;
-    process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/test";
-    process.env.PLATFORM_ADMIN_SECRET = "test-secret";
-    process.env.LENDER_API_KEY_SALT = "test-salt";
-    process.env.STELLAR_NETWORK = "testnet";
-    process.env.HORIZON_URL = "https://horizon-testnet.stellar.org";
-    process.env.S3_BUCKET = "test-bucket";
-    process.env.S3_REGION = "us-east-1";
 
     await assert.rejects(
-      async () => {
-        await importConfig();
-      },
+      async () => { await importConfig(); },
       (err: Error) => {
         assert.equal(err.message, "Missing required environment variable: JWT_SECRET");
         return true;
@@ -42,19 +47,11 @@ describe("Environment Validation", () => {
   });
 
   it("throws error when required DATABASE_URL is missing", async () => {
+    Object.assign(process.env, fullEnv());
     delete process.env.DATABASE_URL;
-    process.env.JWT_SECRET = "test-secret";
-    process.env.PLATFORM_ADMIN_SECRET = "test-secret";
-    process.env.LENDER_API_KEY_SALT = "test-salt";
-    process.env.STELLAR_NETWORK = "testnet";
-    process.env.HORIZON_URL = "https://horizon-testnet.stellar.org";
-    process.env.S3_BUCKET = "test-bucket";
-    process.env.S3_REGION = "us-east-1";
 
     await assert.rejects(
-      async () => {
-        await importConfig();
-      },
+      async () => { await importConfig(); },
       (err: Error) => {
         assert.equal(err.message, "Missing required environment variable: DATABASE_URL");
         return true;
@@ -63,19 +60,11 @@ describe("Environment Validation", () => {
   });
 
   it("throws error when required PLATFORM_ADMIN_SECRET is missing", async () => {
+    Object.assign(process.env, fullEnv());
     delete process.env.PLATFORM_ADMIN_SECRET;
-    process.env.JWT_SECRET = "test-secret";
-    process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/test";
-    process.env.LENDER_API_KEY_SALT = "test-salt";
-    process.env.STELLAR_NETWORK = "testnet";
-    process.env.HORIZON_URL = "https://horizon-testnet.stellar.org";
-    process.env.S3_BUCKET = "test-bucket";
-    process.env.S3_REGION = "us-east-1";
 
     await assert.rejects(
-      async () => {
-        await importConfig();
-      },
+      async () => { await importConfig(); },
       (err: Error) => {
         assert.equal(err.message, "Missing required environment variable: PLATFORM_ADMIN_SECRET");
         return true;
@@ -83,14 +72,25 @@ describe("Environment Validation", () => {
     );
   });
 
-  it("does not log secret values in error messages", async () => {
-    delete process.env.JWT_SECRET;
-    process.env.DATABASE_URL = "postgresql://user:password@localhost/db";
+  it("throws error when required STELLAR_PLATFORM_SECRET is missing", async () => {
+    Object.assign(process.env, fullEnv());
+    delete process.env.STELLAR_PLATFORM_SECRET;
 
     await assert.rejects(
-      async () => {
-        await importConfig();
-      },
+      async () => { await importConfig(); },
+      (err: Error) => {
+        assert.equal(err.message, "Missing required environment variable: STELLAR_PLATFORM_SECRET");
+        return true;
+      }
+    );
+  });
+
+  it("does not log secret values in error messages", async () => {
+    Object.assign(process.env, fullEnv());
+    delete process.env.JWT_SECRET;
+
+    await assert.rejects(
+      async () => { await importConfig(); },
       (err: Error) => {
         assert.ok(!err.message.includes("password"));
         assert.ok(!err.message.includes("user"));
@@ -100,35 +100,22 @@ describe("Environment Validation", () => {
   });
 
   it("uses default values for optional PORT when not provided", async () => {
+    Object.assign(process.env, fullEnv());
     delete process.env.PORT;
-    process.env.JWT_SECRET = "test-secret";
-    process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/test";
-    process.env.PLATFORM_ADMIN_SECRET = "test-secret";
-    process.env.LENDER_API_KEY_SALT = "test-salt";
-    process.env.STELLAR_NETWORK = "testnet";
-    process.env.HORIZON_URL = "https://horizon-testnet.stellar.org";
-    process.env.S3_BUCKET = "test-bucket";
-    process.env.S3_REGION = "us-east-1";
 
     const importEnv = await importConfig();
     assert.equal(importEnv.PORT, "3000");
   });
 
   it("successfully loads all required environment variables", async () => {
-    process.env.JWT_SECRET = "my-jwt-secret";
-    process.env.DATABASE_URL = "postgresql://user:pass@localhost:5432/db";
-    process.env.PLATFORM_ADMIN_SECRET = "admin-secret";
-    process.env.LENDER_API_KEY_SALT = "salt-value";
-    process.env.STELLAR_NETWORK = "testnet";
-    process.env.HORIZON_URL = "https://horizon-testnet.stellar.org";
-    process.env.S3_BUCKET = "my-bucket";
-    process.env.S3_REGION = "us-west-2";
+    Object.assign(process.env, fullEnv());
     process.env.PORT = "8000";
 
     const importEnv = await importConfig();
-    assert.equal(importEnv.JWT_SECRET, "my-jwt-secret");
-    assert.equal(importEnv.DATABASE_URL, "postgresql://user:pass@localhost:5432/db");
-    assert.equal(importEnv.PLATFORM_ADMIN_SECRET, "admin-secret");
+    assert.equal(importEnv.JWT_SECRET, "test-secret");
+    assert.equal(importEnv.DATABASE_URL, "postgresql://test:test@localhost:5432/test");
+    assert.equal(importEnv.PLATFORM_ADMIN_SECRET, "test-admin-secret");
+    assert.equal(importEnv.STELLAR_PLATFORM_SECRET, "SCZANGBA5RLXM6HIERL3WTJFB56Y4RYBUGGUWLPQKDIBPXHKNE4ACBFF");
     assert.equal(importEnv.PORT, "8000");
   });
 });

@@ -13,10 +13,22 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - run: npm ci
       - run: npm test
+        env:
+          NODE_ENV: test
+          PORT: 3000
+          JWT_SECRET: test-secret-key-minimum-32-characters-long
+          LENDER_API_KEY_SALT: test-salt-key-minimum-32-characters-long
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          STELLAR_NETWORK: testnet
+          HORIZON_URL: https://horizon-testnet.stellar.org
+          STELLAR_PLATFORM_SECRET: SCZANGBA5RLXM6HIERL3WTJFB56Y4RYBUGGUWLPQKDIBPXHKNE4ACBFF
+          PLATFORM_ADMIN_SECRET: test-admin-secret-minimum-32-chars
+          S3_BUCKET: test-bucket
+          S3_REGION: us-east-1
       - run: npm run build:api
       - run: npm run build:custodian
       - run: npm run build:farmer
