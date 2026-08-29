@@ -11,7 +11,7 @@ import { type ZodSchema } from 'zod'
  */
 export const validate = (schema: ZodSchema) =>
   (req: Request, res: Response, next: NextFunction): void => {
-    const result = schema.safeParse(req.body)
+    const result = schema.safeParse(req.body ?? {})
     if (!result.success) {
       const error = result.error.issues.map((issue) => issue.message).join(', ')
       res.status(400).json({ success: false, error })

@@ -16,7 +16,8 @@
     "build:custodian": "npm run build --workspace=apps/custodian",
     "build:farmer": "npm run build --workspace=apps/farmer",
     "build:lender": "npm run build --workspace=apps/lender",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "test:coverage": "npm run test:coverage --workspace=apps/api"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -24,7 +25,9 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.2.5",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "jest": "^30.0.0",
+    "ts-jest": "^29.2.5"
   },
   "engines": {
     "node": ">=20.0.0",

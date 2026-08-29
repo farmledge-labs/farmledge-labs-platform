@@ -198,7 +198,74 @@ async function main(): Promise<void> {
     },
   });
 
-  console.log('  ✔ Tokens: KN-2026-000001 through KD-2026-000006 (active, locked, transferred, exited)');
+  // 7. Example parent token that was split (exited) — Aminu @ Kano
+  // This demonstrates the lineage feature: a parent token that was split into two children
+  await prisma.token.upsert({
+    where: { tokenId: 'KN-2026-000007' },
+    update: {},
+    create: {
+      tokenId: 'KN-2026-000007',
+      commodity: Commodity.MAIZE_WHITE,
+      grade: Grade.Grade_A,
+      bagCount: 50,
+      weightPerBagKg: 100,
+      totalWeightKg: 50 * 100, // 5000
+      status: TokenStatus.exited, // Parent token is burned after split
+      isLocked: false,
+      exitDate: new Date('2026-05-15'),
+      txHash: 'TX007ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEF07',
+      stellarExplorerLink: 'https://stellar.expert/explorer/testnet/tx/TX007ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEF07',
+      farmerId: aminuMusa.id,
+      warehouseId: kanoCentral.id,
+      parentTokenId: null, // This is a root token
+    },
+  });
+
+  // 8. First child from split of KN-2026-000007 (20 bags) — Aminu @ Kano
+  await prisma.token.upsert({
+    where: { tokenId: 'KN-2026-000008' },
+    update: {},
+    create: {
+      tokenId: 'KN-2026-000008',
+      commodity: Commodity.MAIZE_WHITE,
+      grade: Grade.Grade_A,
+      bagCount: 20,
+      weightPerBagKg: 100,
+      totalWeightKg: 20 * 100, // 2000
+      status: TokenStatus.active,
+      isLocked: false,
+      txHash: 'TX008ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEF08',
+      stellarExplorerLink: 'https://stellar.expert/explorer/testnet/tx/TX008ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEF08',
+      farmerId: aminuMusa.id,
+      warehouseId: kanoCentral.id,
+      parentTokenId: 'KN-2026-000007', // Child references parent
+    },
+  });
+
+  // 9. Second child from split of KN-2026-000007 (30 bags) — Aminu @ Kano
+  await prisma.token.upsert({
+    where: { tokenId: 'KN-2026-000009' },
+    update: {},
+    create: {
+      tokenId: 'KN-2026-000009',
+      commodity: Commodity.MAIZE_WHITE,
+      grade: Grade.Grade_A,
+      bagCount: 30,
+      weightPerBagKg: 100,
+      totalWeightKg: 30 * 100, // 3000
+      status: TokenStatus.active,
+      isLocked: false,
+      txHash: 'TX009ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEF09',
+      stellarExplorerLink: 'https://stellar.expert/explorer/testnet/tx/TX009ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEF09',
+      farmerId: aminuMusa.id,
+      warehouseId: kanoCentral.id,
+      parentTokenId: 'KN-2026-000007', // Child references parent
+    },
+  });
+
+  console.log('  ✔ Tokens: KN-2026-000001 through KN-2026-000009');
+  console.log('    - KN-2026-000007 (parent, exited) → KN-2026-000008 + KN-2026-000009 (children, active)');
+  console.log('    - Demonstrates token lineage: 50 bags split into 20 + 30 bags');
   console.log('✅ Seeding complete.');
 }
 

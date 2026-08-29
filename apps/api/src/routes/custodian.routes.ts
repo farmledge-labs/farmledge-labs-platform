@@ -1,16 +1,14 @@
-import { Router } from 'express'
-import { requireJWT } from '../middleware/auth.middleware.js'
+import { Router } from 'express';
+import { requireJWT } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { DepositSchema, ExitSchema } from '../schemas/index.js';
+import { processExit } from '../controllers/custodian.controller.js';
+import { createDeposit, getWarehouseInventory } from './custodian.controller.js';
 
-export const custodianRouter = Router()
+export const custodianRouter = Router();
 
-custodianRouter.post('/deposits', requireJWT, (req, res) => {
-  res.status(200).json({ success: true, data: 'STUB — createDeposit' })
-})
+custodianRouter.post('/deposits', requireJWT, validate(DepositSchema), createDeposit);
 
-custodianRouter.post('/exits/:token_id', requireJWT, (req, res) => {
-  res.status(200).json({ success: true, data: 'STUB — createExit' })
-})
+custodianRouter.post('/exits/:token_id', requireJWT, validate(ExitSchema), processExit);
 
-custodianRouter.get('/warehouse/:warehouse_id/inventory', requireJWT, (req, res) => {
-  res.status(200).json({ success: true, data: 'STUB — getWarehouseInventory' })
-})
+custodianRouter.get('/warehouse/:warehouse_id/inventory', requireJWT, getWarehouseInventory);
