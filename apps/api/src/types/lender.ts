@@ -72,32 +72,66 @@ export interface VerifyTokenReport {
   bagCount: number
   weightPerBagKg: number
   totalWeightKg: number
+
+  /** On-chain anchoring */
   txHash: string
   stellarExplorerLink: string
+
+  /** DB-recorded lifecycle dates */
   depositDate: string
   exitDate: string | null
+
+  /** DB status at time of request */
   dbStatus: string
+
+  /** Live chain status queried from Horizon at request time */
   chainStatus: ChainStatusLive
+
+  /** True when dbStatus and chainStatus agree */
   chainStatusMatch: boolean
+
+  /** Lock status */
   isLocked: boolean
   lockedByLenderId: string | null
   loanReference: string | null
+
+  /** Warehouse details */
   warehouse: {
     id: string
     name: string
     location: string
     state: string
+    /** Whether the warehouse holds a platform certification */
     certified: boolean
   }
+
+  /** Farmer details */
   farmer: {
     id: string
     fullName: string
+    /** Whether the farmer's BVN has been verified */
     bvnVerified: boolean
   }
-  /** NGN-denominated — deliberate exception per LEND-2 spec */
+
+  /**
+   * Estimated collateral value in whole Naira.
+   *
+   * Computed as: totalWeightKg × price_per_kg(commodity, grade)
+   * Uses the same price table as LEND-1 (commodity-price.service.ts).
+   *
+   * This is the ONLY place NGN values appear in the Farmledge API surface.
+   */
   estimatedValueNgn: number
+
+  /** Per-kg price used for this estimate */
   pricePerKgNgn: number
+
+  /** Individual verification checks */
   verificationFlags: VerificationFlag[]
+
+  /** Overall lendability verdict */
   verdict: LendabilityVerdict
+
+  /** ISO 8601 timestamp at which this report was generated */
   reportGeneratedAt: string
 }

@@ -1,0 +1,42 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${API_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-local-development-jwt-secret}
+      LENDER_API_KEY_SALT: ${LENDER_API_KEY_SALT:-local-development-api-key-salt}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-farmledge}:${POSTGRES_PASSWORD:-farmledge}@postgres:5432/${POSTGRES_DB:-farmledge}
+      DIRECT_URL: postgresql://${POSTGRES_USER:-farmledge}:${POSTGRES_PASSWORD:-farmledge}@postgres:5432/${POSTGRES_DB:-farmledge}
+      STELLAR_NETWORK: ${STELLAR_NETWORK:-testnet}
+      HORIZON_URL: ${HORIZON_URL:-https://horizon-testnet.stellar.org}
+      PLATFORM_ADMIN_SECRET: ${PLATFORM_ADMIN_SECRET:-local-development-admin-secret}
+      S3_BUCKET: ${S3_BUCKET:-local-development-bucket}
+      S3_REGION: ${S3_REGION:-us-east-1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-farmledge}
+      POSTGRES_USER: ${POSTGRES_USER:-farmledge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-farmledge}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

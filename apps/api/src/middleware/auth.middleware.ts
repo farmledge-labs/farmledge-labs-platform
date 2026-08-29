@@ -1,4 +1,8 @@
+import { createHash } from 'node:crypto'
 import { type Request, type Response, type NextFunction } from 'express'
+import { verifyToken } from '../lib/jwt.js'
+import { db } from '../lib/db.js'
+import { type RequestContext } from './logger.middleware.js'
 
 export const requireJWT = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization
@@ -6,18 +10,30 @@ export const requireJWT = (req: Request, res: Response, next: NextFunction): voi
     res.status(401).json({ success: false, error: 'Unauthorized' })
     return
   }
-  next()
+
+  const token = authHeader.split(' ')[1]
+  if (!token) {
+    res.status(401).json({ success: false, error: 'Unauthorized' })
+    return
+  }
+
+  try {
+    const payload = verifyToken(token)
+    // Attach user payload to request for downstream handlers
+    ;(req as any).user = payload
+    ;(req as RequestContext).authContext = { actorId: payload.sub, actorRole: payload.role }
+    next()
+  } catch (error) {
+    res.status(401).json({ success: false, error: 'Unauthorized' })
+  }
 }
 
-/**
- * Stub API key guard for lender routes.
- *
- * Returns 401 if the `X-API-Key` header is missing or empty.
- * Validation against `LENDER_API_KEY_SALT` is intentionally out of
- * scope for this stub — a future PR will perform real verification
- * (constant-time compare against a hashed lender key).
- */
-export const requireAPIKey = (req: Request, res: Response, next: NextFunction): void => {
+function hashApiKey(apiKey: string): string {
+  const salt = process.env.LENDER_API_KEY_SALT || 'change-me-in-production'
+  return createHash('sha256').update(`${salt}:${apiKey}`).digest('hex')
+}
+
+export const requireAPIKey = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const rawApiKey = req.headers['x-api-key']
   // Headers may be sent as an array when the same header appears more
   // than once; normalize to the first value so `!apiKey` covers both
@@ -27,5 +43,33 @@ export const requireAPIKey = (req: Request, res: Response, next: NextFunction): 
     res.status(401).json({ success: false, error: 'API key required' })
     return
   }
-  next()
+
+  try {
+    const keyHash = hashApiKey(apiKey)
+    const storedApiKey = await db.apiKey.findFirst({
+      where: { keyHash },
+      select: { id: true, lenderId: true, revokedAt: true },
+    })
+
+    if (!storedApiKey) {
+      res.status(401).json({ success: false, error: 'Invalid API key' })
+      return
+    }
+
+    if (storedApiKey.revokedAt) {
+      res.status(401).json({ success: false, error: 'API key revoked' })
+      return
+    }
+
+    await db.apiKey.update({
+      where: { id: storedApiKey.id },
+      data: { lastUsedAt: new Date() },
+    })
+
+    ;(req as RequestContext).authContext = { actorId: storedApiKey.lenderId, actorRole: 'lender' }
+
+    next()
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Unable to validate API key' })
+  }
 }

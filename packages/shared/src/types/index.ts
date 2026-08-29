@@ -32,6 +32,25 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+export interface TokenRecord {
+  token_id: string;
+  farmer_id: string;
+  commodity: CommodityType;
+  grade: Grade;
+  bag_count: number;
+  weight_per_bag_kg: number;
+  total_weight_kg: number;
+  warehouse_id: string;
+  warehouse_name: string;
+  warehouse_certified: boolean;
+  custodian_wallet: string;
+  deposit_date: string;
+  status: string;
+  is_locked: boolean;
+  tx_hash: string;
+  stellar_explorer_link: string;
+}
+
 export interface JWTPayload {
   sub: string;
   role: 'farmer' | 'custodian';

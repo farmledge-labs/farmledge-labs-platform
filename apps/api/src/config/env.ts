@@ -21,6 +21,10 @@ export const env = {
   PLATFORM_ADMIN_SECRET: requireEnv("PLATFORM_ADMIN_SECRET"),
   S3_BUCKET: requireEnv("S3_BUCKET"),
   S3_REGION: requireEnv("S3_REGION"),
+  // Comma-separated list of allowed CORS origins in production.
+  // Example: "https://app.farmledge.io,https://admin.farmledge.io"
+  // Leave unset (or empty) in dev/test — all origins are permitted there.
+  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS ?? "",
 } as const;
 
 // Validate that no secrets are accidentally logged
