@@ -95,6 +95,7 @@ jobs:
           DIRECT_URL: postgresql://test:test@localhost:5432/test
           STELLAR_NETWORK: testnet
           HORIZON_URL: https://horizon-testnet.stellar.org
+          STELLAR_PLATFORM_SECRET: SCZANGBA5RLXM6HIERL3WTJFB56Y4RYBUGGUWLPQKDIBPXHKNE4ACBFF
           PLATFORM_ADMIN_SECRET: test-admin-secret-minimum-32-chars
           S3_BUCKET: test-bucket
           S3_REGION: us-east-1
