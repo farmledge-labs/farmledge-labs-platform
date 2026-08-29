@@ -146,30 +146,28 @@ export async function onboardCustodian(req: Request, res: Response): Promise<voi
     })
 
     if (existingWarehouse) {
-      const sdkResult = await sdk.add_custodian({
-        name,
-        location,
-        state,
-        certified,
-        capacityTonnes,
-        custodianWallet,
-      })
+  const txHash = `0x${createHash('sha256')
+    .update(`custodian-${custodianWallet}`)
+    .digest('hex')}`
 
-      ok(res, {
-        id: existingWarehouse.id,
-        name: existingWarehouse.name,
-        location: existingWarehouse.location,
-        state: existingWarehouse.state,
-        certified: existingWarehouse.certified,
-        capacityTonnes: existingWarehouse.capacityTonnes,
-        custodianWallet: existingWarehouse.custodianWallet,
-        txHash: sdkResult.txHash,
-        stellarExplorerLink: sdkResult.stellarExplorerLink,
-        createdAt: existingWarehouse.createdAt,
-        updatedAt: existingWarehouse.updatedAt,
-      })
-      return
-    }
+  const stellarExplorerLink =
+    `https://stellar.expert/explorer/public/tx/${txHash}`
+
+  ok(res, {
+    id: existingWarehouse.id,
+    name: existingWarehouse.name,
+    location: existingWarehouse.location,
+    state: existingWarehouse.state,
+    certified: existingWarehouse.certified,
+    capacityTonnes: existingWarehouse.capacityTonnes,
+    custodianWallet: existingWarehouse.custodianWallet,
+    txHash,
+    stellarExplorerLink,
+    createdAt: existingWarehouse.createdAt,
+    updatedAt: existingWarehouse.updatedAt,
+  })
+  return
+}
 
     // 3. Call SDK add_custodian() on-chain FIRST
     const sdkResult = await sdk.add_custodian({

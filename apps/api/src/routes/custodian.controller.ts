@@ -5,6 +5,7 @@ import * as db from '../db/index.js'
 import { db as prisma } from '../lib/db.js'
 import { BAG_SIZE_CONFIG } from '../config/bagSizes.js'
 import { type TokenRecord, type CommodityType, type Grade } from '@farmledge/shared'
+import { getCursorPagination } from '../lib/pagination.js'
 
 interface DepositBody {
   farmerId?: string
@@ -112,15 +113,83 @@ export const getWarehouseInventory = async (req: Request, res: Response) => {
   const warehouseId = req.params.warehouse_id ?? ''
 
   try {
+    const { cursor, limit } = getCursorPagination(req)
+
+    const commodity =
+      typeof req.query.commodity === 'string' && req.query.commodity.trim()
+        ? req.query.commodity.trim()
+        : undefined
+
+    const grade =
+      typeof req.query.grade === 'string' && req.query.grade.trim()
+        ? req.query.grade.trim()
+        : undefined
+
+    const fromDate =
+      typeof req.query.fromDate === 'string'
+        ? new Date(req.query.fromDate)
+        : undefined
+
+    const toDate =
+      typeof req.query.toDate === 'string'
+        ? new Date(req.query.toDate)
+        : undefined
+
+    const where: any = {
+      warehouseId,
+    }
+
+    if (commodity) {
+      where.commodity = commodity
+    }
+
+    if (grade) {
+      where.grade = grade
+    }
+
+    if (
+      (fromDate && !Number.isNaN(fromDate.getTime())) ||
+      (toDate && !Number.isNaN(toDate.getTime()))
+    ) {
+      where.depositDate = {}
+
+      if (fromDate && !Number.isNaN(fromDate.getTime())) {
+        where.depositDate.gte = fromDate
+      }
+
+      if (toDate && !Number.isNaN(toDate.getTime())) {
+        where.depositDate.lte = toDate
+      }
+    }
+
     const tokens = await prisma.token.findMany({
-      where: { warehouseId, status: 'active' },
+      where,
       include: { warehouse: true },
-      orderBy: { depositDate: 'desc' },
+      orderBy: { id: 'asc' },
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      take: limit + 1,
     })
 
-    return res.status(200).json({ success: true, data: tokens.map(serializeToken) })
+    const hasMore = tokens.length > limit
+    const pageTokens = hasMore ? tokens.slice(0, limit) : tokens
+    const nextCursor = hasMore
+      ? pageTokens[pageTokens.length - 1]?.id ?? null
+      : null
+
+    return res.status(200).json({
+      success: true,
+      data: pageTokens.map(serializeToken),
+      pagination: {
+        limit,
+        next_cursor: nextCursor,
+        has_more: hasMore,
+      },
+    })
   } catch (error) {
-    // Fallback for environments/tests without a connected database.
-    return res.status(200).json({ success: true, data: [] })
+    console.error('Failed to fetch warehouse inventory:', error)
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch warehouse inventory',
+    })
   }
 }

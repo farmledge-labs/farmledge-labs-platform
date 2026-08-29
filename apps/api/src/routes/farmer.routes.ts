@@ -3,6 +3,7 @@ import { requireJWT } from '../middleware/auth.middleware.js'
 import { generateWarehouseReceiptPdf } from '../lib/pdf/certificate.js'
 import { db } from '../lib/db.js'
 import type { JWTPayload, TokenRecord } from '@farmledge/shared'
+import { getCursorPagination } from '../lib/pagination.js'
 
 export const farmerRouter = Router()
 
@@ -55,30 +56,61 @@ farmerRouter.get('/farmers/:farmer_id/tokens', requireJWT, async (req, res) => {
 })
 // 1. Change the handler to 'async'
 farmerRouter.get('/farmers/:farmer_id/history', requireJWT, async (req, res) => {
-  // 2. Extract farmerId from the authenticated JWT (req.user.sub)
-  // We ignore the :farmer_id path param for security, as per the issue description.
   const farmerId = (req as Request & { user?: JWTPayload }).user?.sub
-  
+
   if (!farmerId) {
     res.status(401).json({ success: false, error: 'Unauthorized' })
     return
   }
 
   try {
-    // 3. Query the database for the history (activity) of this farmer
+    const { cursor, limit } = getCursorPagination(req)
+
     const history = await (db as any).activity?.findMany?.({
-      where: { farmerId },
-      orderBy: { createdAt: 'desc' }, // Show newest history first
+      where: {
+        farmerId,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+      ...(cursor
+        ? {
+            cursor: { id: cursor },
+            skip: 1,
+          }
+        : {}),
+      take: limit + 1,
     }) ?? []
 
-    res.status(200).json({ 
-      success: true, 
-      data: history 
+    const hasMore = history.length > limit
+    const pageHistory = hasMore
+      ? history.slice(0, limit)
+      : history
+
+    const nextCursor = hasMore
+      ? pageHistory[pageHistory.length - 1]?.id ?? null
+      : null
+
+    res.status(200).json({
+      success: true,
+      data: pageHistory,
+      pagination: {
+        limit,
+        next_cursor: nextCursor,
+        has_more: hasMore,
+      },
     })
   } catch (error) {
-    // 4. Fallback for environments without database connectivity
     console.error('History fetch error:', error)
-    res.status(200).json({ success: true, data: [] })
+    res.status(200).json({
+      success: true,
+      data: [],
+      pagination: {
+        limit: getCursorPagination(req).limit,
+        next_cursor: null,
+        has_more: false,
+      },
+    })
   }
 })
 

@@ -1,6 +1,7 @@
 import { type Request, type Response } from 'express'
 import { db } from '../lib/db.js'
 import { sdk } from '../services/sdk.js'
+import { getCursorPagination } from '../lib/pagination.js'
 
 const PLACEHOLDER_PRICE_NGN_PER_KG = 1_000
 
@@ -28,8 +29,13 @@ interface CollateralToken {
   }
 }
 
+function getFarmerId(req: Request): string | undefined {
+  return req.params.farmer_id
+}
+
 export async function getFarmerCollateral(req: Request, res: Response): Promise<void> {
-  const farmerId = req.params.farmer_id
+  const farmerId = getFarmerId(req)
+
   if (!farmerId) {
     res.status(401).json({ success: false, error: 'Unauthorized' })
     return
@@ -38,13 +44,41 @@ export async function getFarmerCollateral(req: Request, res: Response): Promise<
   const priceTimestamp = new Date().toISOString()
 
   try {
+    const { cursor, limit } = getCursorPagination(req)
+
+    const sortBy =
+      req.query.sortBy === 'weight'
+        ? 'weight'
+        : 'date'
+
+    const orderBy =
+      sortBy === 'weight'
+        ? { totalWeightKg: 'desc' as const }
+        : { depositDate: 'desc' as const }
+
     const tokens = await db.token.findMany({
-      where: { farmerId, status: 'active', isLocked: false },
-      orderBy: { depositDate: 'desc' },
+      where: {
+        farmerId,
+        status: 'active',
+        isLocked: false,
+      },
+      orderBy,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      take: limit + 1,
     })
 
+    const hasMore = tokens.length > limit
+    const pageTokens = hasMore
+      ? tokens.slice(0, limit)
+      : tokens
+
+    const nextCursor = hasMore
+      ? pageTokens[pageTokens.length - 1]?.id ?? null
+      : null
+
     const collateral: CollateralToken[] = []
-    for (const token of tokens) {
+
+    for (const token of pageTokens) {
       const chain = await sdk.query({
         tokenId: token.tokenId,
         ownerWalletAddress: '',
@@ -52,6 +86,7 @@ export async function getFarmerCollateral(req: Request, res: Response): Promise<
         status: token.status,
         isLocked: token.isLocked,
       })
+
       const mismatch =
         chain.totalWeightKg !== token.totalWeightKg ||
         chain.status !== token.status ||
@@ -64,9 +99,13 @@ export async function getFarmerCollateral(req: Request, res: Response): Promise<
         total_weight_kg: token.totalWeightKg,
         status: token.status,
         is_locked: token.isLocked,
-        estimatedValueNgn: token.totalWeightKg * PLACEHOLDER_PRICE_NGN_PER_KG,
+        estimatedValueNgn:
+          token.totalWeightKg * PLACEHOLDER_PRICE_NGN_PER_KG,
         priceTimestamp,
-        price: { amountNgnPerKg: PLACEHOLDER_PRICE_NGN_PER_KG, source: 'placeholder' },
+        price: {
+          amountNgnPerKg: PLACEHOLDER_PRICE_NGN_PER_KG,
+          source: 'placeholder',
+        },
         chain: {
           verified: !mismatch,
           mismatch,
@@ -83,14 +122,29 @@ export async function getFarmerCollateral(req: Request, res: Response): Promise<
       success: true,
       data: {
         farmer_id: farmerId,
-        estimatedValueNgn: collateral.reduce((total, token) => total + token.estimatedValueNgn, 0),
+        estimatedValueNgn: collateral.reduce(
+          (total, token) => total + token.estimatedValueNgn,
+          0,
+        ),
         priceTimestamp,
-        price: { amountNgnPerKg: PLACEHOLDER_PRICE_NGN_PER_KG, source: 'placeholder' },
+        price: {
+          amountNgnPerKg: PLACEHOLDER_PRICE_NGN_PER_KG,
+          source: 'placeholder',
+        },
         tokens: collateral,
+      },
+      pagination: {
+        limit,
+        next_cursor: nextCursor,
+        has_more: hasMore,
+        sort_by: sortBy,
       },
     })
   } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to fetch farmer collateral' })
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch farmer collateral',
+    })
   }
 }
 

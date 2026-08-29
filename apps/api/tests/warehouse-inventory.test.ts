@@ -78,6 +78,9 @@ gForPrisma.prisma = {
     findMany: async ({ where }: any) => {
       return where?.warehouseId === WAREHOUSE_ID ? DB_TOKENS : []
     },
+    count: async ({ where }: any) => {
+      return where?.warehouseId === WAREHOUSE_ID ? DB_TOKENS.length : 0
+    },
   },
 }
 
@@ -123,6 +126,11 @@ describe('GET /api/v1/warehouse/:warehouse_id/inventory', () => {
 
     // Every returned token belongs to the requested warehouse.
     assert.ok(body.data.every((t: any) => t.warehouse_id === WAREHOUSE_ID))
+    assert.deepEqual(body.pagination, {
+  limit: 20,
+  next_cursor: null,
+  has_more: false,
+   })
   })
 
   test('returns an empty array for a warehouse with no tokens', async () => {
@@ -132,7 +140,13 @@ describe('GET /api/v1/warehouse/:warehouse_id/inventory', () => {
 
     assert.equal(res.status, 200)
     const body = await res.json()
-    assert.deepEqual(body, { success: true, data: [] })
+    assert.equal(body.success, true)
+    assert.deepEqual(body.data, [])
+    assert.deepEqual(body.pagination, {
+  limit: 20,
+  next_cursor: null,
+  has_more: false,
+   })
   })
 
   test('rejects requests without a JWT', async () => {
