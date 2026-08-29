@@ -137,15 +137,6 @@ test('GET /api/v1/lender/tokens/test-token/verify returns 404 for unknown token 
     'Expected a non-empty error message',
   )
 })
-    headers: { 'X-API-Key': validApiKeyHeader },
-  });
-  assert.equal(res.status, 200);
-  const body = await res.json();
-  assert.deepEqual(body, {
-    success: true,
-    data: 'STUB — GET /api/v1/lender/tokens/:token_id/verify',
-  });
-});
 
 test('POST /api/v1/lender/tokens/test-token/lock returns 404 for unknown token (LEND-3 real controller)', async () => {
   const res = await fetch(`${baseUrl}/api/v1/lender/tokens/test-token/lock`, {

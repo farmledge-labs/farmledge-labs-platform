@@ -17,7 +17,7 @@
  *  8. Errors on one token do not abort the rest of the run
  */
 
-import { test, describe, beforeEach } from 'node:test'
+import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 import { Horizon } from '@stellar/stellar-sdk'
 import { TokenStatus } from '@prisma/client'

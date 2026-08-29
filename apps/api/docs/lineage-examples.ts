@@ -8,7 +8,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 // Example 1: Create root token (parentTokenId defaults to null)
-async function createRootToken() {
+export async function createRootToken() {
   return await prisma.token.create({
     data: {
       tokenId: 'KN-2026-000100',
@@ -29,7 +29,7 @@ async function createRootToken() {
 }
 
 // Example 2: Create child token with parent reference
-async function createChildToken(parentTokenId: string) {
+export async function createChildToken(parentTokenId: string) {
   return await prisma.token.create({
     data: {
       tokenId: 'KN-2026-000101',
@@ -50,7 +50,7 @@ async function createChildToken(parentTokenId: string) {
 }
 
 // Example 3: Query with parent relation
-async function getTokenWithParent(tokenId: string) {
+export async function getTokenWithParent(tokenId: string) {
   const token = await prisma.token.findUnique({
     where: { tokenId },
     include: { parent: true },
@@ -64,7 +64,7 @@ async function getTokenWithParent(tokenId: string) {
 }
 
 // Example 4: Query with children relation
-async function getTokenWithChildren(tokenId: string) {
+export async function getTokenWithChildren(tokenId: string) {
   const token = await prisma.token.findUnique({
     where: { tokenId },
     include: { children: true },

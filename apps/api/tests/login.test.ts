@@ -15,12 +15,7 @@ import bcrypt from 'bcrypt'
 // ── Test fixture ──────────────────────────────────────────────────────────────
 
 const VALID_PIN = '1234'
-let pinHash: string
-
-// Hash the PIN synchronously so it is ready before any import triggers the db
-// module.  bcryptjs is not available here, so we must await — but we can do
-// this before the app import because top-level await is allowed in ESM.
-pinHash = await bcrypt.hash(VALID_PIN, 10)
+const pinHash = await bcrypt.hash(VALID_PIN, 10)
 
 const FARMER_STUB = {
   id: 'farmer-uuid-test-001',
