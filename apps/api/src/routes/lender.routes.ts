@@ -8,9 +8,8 @@ export const lenderRouter = Router()
 
 lenderRouter.get('/farmers/:farmer_id/collateral', requireAPIKey, getFarmerCollateral)
 
-lenderRouter.get('/tokens/:token_id/verify', requireAPIKey, (req, res) => {
-  res.status(200).json({ success: true, data: 'STUB — GET /api/v1/lender/tokens/:token_id/verify' })
-})
+// LEND-2 — real implementation
+lenderRouter.get('/tokens/:token_id/verify', requireAPIKey, verifyTokenController)
 
 lenderRouter.post('/tokens/:token_id/lock', requireAPIKey, validate(LockSchema), (req, res) => {
   return lockToken(req, res)

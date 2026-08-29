@@ -5,19 +5,16 @@ import { errorHandler } from '../../src/middleware/error.middleware.js';
 
 test('Error middleware', async (t) => {
   const mockResponse = () => {
-    const res: Partial<Response> & { statusCode: number; body: unknown } = {
-      status(code: number) {
-        this.statusCode = code;
-        return this as Response;
-      },
-      json(data: unknown) {
-        this.body = data;
-        return this as Response;
-      },
-      statusCode: 0,
-      body: undefined,
+    const res: any = {};
+    res.status = (code: number) => {
+      res.statusCode = code;
+      return res;
     };
-    return res as Response & { statusCode: number; body: unknown };
+    res.json = (data: any) => {
+      res.body = data;
+      return res;
+    };
+    return res as Response & { statusCode: number, body: any };
   };
 
   const req = {} as Request;

@@ -125,8 +125,18 @@ test('GET /api/v1/lender/farmers/test-farmer/collateral returns calculated colla
   assert.ok(Array.isArray(body.data.tokens));
 });
 
-test('GET /api/v1/lender/tokens/test-token/verify returns 200 stub response', async () => {
+test('GET /api/v1/lender/tokens/test-token/verify returns 404 for unknown token (LEND-2 real controller)', async () => {
   const res = await fetch(`${baseUrl}/api/v1/lender/tokens/test-token/verify`, {
+    headers: { 'X-API-Key': 'test-key' },
+  })
+  assert.equal(res.status, 404)
+  const body = await res.json()
+  assert.equal(body.success, false)
+  assert.ok(
+    typeof body.error === 'string' && body.error.length > 0,
+    'Expected a non-empty error message',
+  )
+})
     headers: { 'X-API-Key': validApiKeyHeader },
   });
   assert.equal(res.status, 200);
