@@ -97,13 +97,17 @@ test('GET /api/v1/lender/farmers/test-farmer/collateral returns 200 stub respons
   assert.deepEqual(body, { success: true, data: 'STUB — GET /api/v1/lender/farmers/:farmer_id/collateral' })
 })
 
-test('GET /api/v1/lender/tokens/test-token/verify returns 200 stub response', async () => {
+test('GET /api/v1/lender/tokens/test-token/verify returns 404 for unknown token (LEND-2 real controller)', async () => {
   const res = await fetch(`${baseUrl}/api/v1/lender/tokens/test-token/verify`, {
     headers: { 'X-API-Key': 'test-key' },
   })
-  assert.equal(res.status, 200)
+  assert.equal(res.status, 404)
   const body = await res.json()
-  assert.deepEqual(body, { success: true, data: 'STUB — GET /api/v1/lender/tokens/:token_id/verify' })
+  assert.equal(body.success, false)
+  assert.ok(
+    typeof body.error === 'string' && body.error.length > 0,
+    'Expected a non-empty error message',
+  )
 })
 
 test('POST /api/v1/lender/tokens/test-token/lock returns 200 stub response', async () => {
