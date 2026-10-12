@@ -10,7 +10,7 @@ import { env } from '../config/env.js'
  *   S3_REGION  — AWS region (or "auto" for R2)
  *
  * Optional env vars:
- *   S3_ENDPOINT — custom endpoint URL (required for R2 / localstack)
+ *   S3_ENDPOINT          — custom endpoint URL (required for R2 / localstack)
  *   S3_ACCESS_KEY_ID     — access key (falls back to AWS credential chain)
  *   S3_SECRET_ACCESS_KEY — secret key (falls back to AWS credential chain)
  */
@@ -25,17 +25,17 @@ function createS3Client(): S3Client {
   }
 
   // Custom endpoint for R2 / localstack / MinIO
-  if (process.env.S3_ENDPOINT) {
-    clientConfig.endpoint = process.env.S3_ENDPOINT
+  if (env.S3_ENDPOINT) {
+    clientConfig.endpoint = env.S3_ENDPOINT
     // R2 requires path-style forcing
     clientConfig.forcePathStyle = true
   }
 
   // Explicit credentials — skip to use the default AWS credential chain
-  if (process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY) {
+  if (env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY) {
     clientConfig.credentials = {
-      accessKeyId: process.env.S3_ACCESS_KEY_ID,
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+      accessKeyId: env.S3_ACCESS_KEY_ID,
+      secretAccessKey: env.S3_SECRET_ACCESS_KEY,
     }
   }
 
@@ -44,9 +44,10 @@ function createS3Client(): S3Client {
 
 export const s3 = globalForS3.s3 ?? createS3Client()
 
-if (process.env.NODE_ENV !== 'production') {
+if (env.NODE_ENV !== 'production') {
   globalForS3.s3 = s3
 }
 
 /** The configured bucket name, read once from env at startup. */
 export const S3_BUCKET = env.S3_BUCKET
+

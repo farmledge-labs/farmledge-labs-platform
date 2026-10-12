@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import pino from 'pino'
 import { type Request, type Response, type NextFunction } from 'express'
+import { env } from '../config/env.js'
 
 export const logger = pino({
-  level: process.env.LOG_LEVEL ?? 'info',
+  level: env.LOG_LEVEL,
 })
 
 export type RequestContext = Request & {

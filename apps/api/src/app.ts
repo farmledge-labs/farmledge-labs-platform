@@ -3,6 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import { env } from './config/env.js'
 import { router } from './routes/index.js'
+import { healthRouter } from './routes/health.routes.js'
 import { errorHandler } from './middleware/error.middleware.js'
 import { requestLogger } from './middleware/logger.middleware.js'
 import { auditMiddleware } from './middleware/audit.middleware.js'
@@ -12,7 +13,7 @@ const app = express()
 // ─── CORS ────────────────────────────────────────────────────────────────────
 // In production: only accept requests from explicitly listed origins.
 // In development / test: allow all origins so local frontends work without config.
-const ALLOWED_ORIGINS_PROD = (process.env.ALLOWED_ORIGINS ?? '')
+const ALLOWED_ORIGINS_PROD = env.ALLOWED_ORIGINS
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean)
@@ -91,13 +92,13 @@ app.use(
 // Cap request bodies at 100 kb to limit memory amplification attacks.
 app.use(express.json({ limit: '100kb' }))
 
-// ─── Health check (intentionally before auth middleware) ─────────────────────
+// ─── Health check (before auth middleware, not rate-limited) ──────────────────
+app.use(healthRouter)
+
+// ─── Request logging & audit ──────────────────────────────────────────────────
 app.use(requestLogger)
 app.use(express.json())
 app.use(auditMiddleware)
-app.get('/health', (_, res) => {
-  res.status(200).json({ status: 'ok', version: '0.1.0', service: 'farmledge-api' })
-})
 
 // ─── API routes ───────────────────────────────────────────────────────────────
 app.use(router)

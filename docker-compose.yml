@@ -1,32 +1,58 @@
+# docker-compose.yml — local development environment
+#
+# NOTE: The postgres service here is for LOCAL DEVELOPMENT ONLY.
+# Production uses Supabase; set DATABASE_URL / DIRECT_URL to point there.
+#
+# Quick start:
+#   cp apps/api/.env.example .env   # then fill in real values
+#   docker compose up --build
+#   curl http://localhost:3000/health
+#
+# Important: when running via Compose, DATABASE_URL and DIRECT_URL must use
+# the Compose service hostname "postgres", not "localhost":
+#   DATABASE_URL=postgresql://farmledge:farmledge@postgres:5432/farmledge
+#   DIRECT_URL=postgresql://farmledge:farmledge@postgres:5432/farmledge
+
 services:
-  api:
+  # ── API ────────────────────────────────────────────────────────────────────
+  app:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "${API_PORT:-3000}:3000"
+    env_file: .env
     environment:
       NODE_ENV: production
-      PORT: 3000
-      JWT_SECRET: ${JWT_SECRET:-local-development-jwt-secret}
-      LENDER_API_KEY_SALT: ${LENDER_API_KEY_SALT:-local-development-api-key-salt}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-farmledge}:${POSTGRES_PASSWORD:-farmledge}@postgres:5432/${POSTGRES_DB:-farmledge}
-      DIRECT_URL: postgresql://${POSTGRES_USER:-farmledge}:${POSTGRES_PASSWORD:-farmledge}@postgres:5432/${POSTGRES_DB:-farmledge}
-      STELLAR_NETWORK: ${STELLAR_NETWORK:-testnet}
-      HORIZON_URL: ${HORIZON_URL:-https://horizon-testnet.stellar.org}
-      PLATFORM_ADMIN_SECRET: ${PLATFORM_ADMIN_SECRET:-local-development-admin-secret}
-      S3_BUCKET: ${S3_BUCKET:-local-development-bucket}
-      S3_REGION: ${S3_REGION:-us-east-1}
+      PORT: "3000"
+      # Compose-internal hostname overrides for DATABASE_URL / DIRECT_URL.
+      # These take precedence over the values in .env so you don't need to
+      # maintain two copies of the connection string.
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-farmledge}:${POSTGRES_PASSWORD:-farmledge}@postgres:5432/${POSTGRES_DB:-farmledge}"
+      DIRECT_URL:   "postgresql://${POSTGRES_USER:-farmledge}:${POSTGRES_PASSWORD:-farmledge}@postgres:5432/${POSTGRES_DB:-farmledge}"
+      REDIS_URL: "redis://redis:6379"
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      # Use wget (always available in alpine) to poll the liveness endpoint.
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  # LOCAL DEVELOPMENT ONLY — production uses Supabase.
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-farmledge}
-      POSTGRES_USER: ${POSTGRES_USER:-farmledge}
+      POSTGRES_DB:       ${POSTGRES_DB:-farmledge}
+      POSTGRES_USER:     ${POSTGRES_USER:-farmledge}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-farmledge}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -37,6 +63,20 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  # ── Redis ──────────────────────────────────────────────────────────────────
+  # Provisioned here for local dev; not yet consumed by application code.
+  # Reserved for CACHE-1 (session caching / rate limiting).
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 volumes:
   postgres_data:

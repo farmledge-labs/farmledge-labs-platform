@@ -3,6 +3,7 @@ import { type Request, type Response, type NextFunction } from 'express'
 import { verifyToken } from '../lib/jwt.js'
 import { db } from '../lib/db.js'
 import { type RequestContext } from './logger.middleware.js'
+import { env } from '../config/env.js'
 
 export const requireJWT = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization
@@ -29,7 +30,7 @@ export const requireJWT = (req: Request, res: Response, next: NextFunction): voi
 }
 
 function hashApiKey(apiKey: string): string {
-  const salt = process.env.LENDER_API_KEY_SALT || 'change-me-in-production'
+  const salt = env.LENDER_API_KEY_SALT
   return createHash('sha256').update(`${salt}:${apiKey}`).digest('hex')
 }
 

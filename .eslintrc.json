@@ -14,7 +14,37 @@
   "rules": {
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-explicit-any": "warn"
+    "@typescript-eslint/no-explicit-any": "warn",
+    "no-restricted-properties": [
+      "error",
+      {
+        "object": "process",
+        "property": "env",
+        "message": "Do not read process.env directly. Import from 'src/config/env.js' instead."
+      }
+    ]
   },
-  "ignorePatterns": ["dist/", "build/", "node_modules/"]
+  "ignorePatterns": ["dist/", "build/", "node_modules/"],
+  "overrides": [
+    {
+      "files": [
+        "apps/api/src/config/env.ts",
+        "apps/api/src/config/env.js"
+      ],
+      "rules": {
+        "no-restricted-properties": "off"
+      }
+    },
+    {
+      "files": [
+        "apps/api/tests/**/*.ts",
+        "apps/api/tests/**/*.js",
+        "apps/api/src/**/*.test.ts",
+        "apps/api/src/**/*.test.js"
+      ],
+      "rules": {
+        "no-restricted-properties": "off"
+      }
+    }
+  ]
 }
